@@ -19,31 +19,86 @@ view: dim_question_zcm {
 
 
 
-#######################################################################################################################################################
-#########################################################      New Fields Added by Chip     ###########################################################
+########################################################################################################################################################
+#########################################################      New Fields Added by Chip      ###########################################################
 ########################################################################################################################################################
 
   dimension: question_group_name {
     type: string
     group_label: "  Chip's Additions"
-    sql: CASE
-               WHEN ${dim_question_group_key_id}='6'  THEN 'Ungrouped'
-               WHEN ${dim_question_group_key_id}='5'  THEN 'Conceptual Questions'
-               WHEN ${dim_question_group_key_id}='12' THEN 'Exercises'
-               WHEN ${dim_question_group_key_id}='14' THEN 'Test Bank'
-               WHEN ${dim_question_group_key_id}='15' THEN 'Active Examples'
-               WHEN ${dim_question_group_key_id}='16' THEN 'Appendix?'
-               WHEN ${dim_question_group_key_id}='18' THEN 'True/False'
-               WHEN ${dim_question_group_key_id}='23' THEN 'Extra Problem'
-               WHEN ${dim_question_group_key_id}='32' THEN 'Tools for Enriching Calculus'
-               WHEN ${dim_question_group_key_id}='38' THEN 'Step by Step'
-               WHEN ${dim_question_group_key_id}='46' THEN 'Extra Problem'
-               WHEN ${dim_question_group_key_id}='47' THEN 'Appendix Extra Problem'
-               WHEN ${dim_question_group_key_id}='52' THEN 'Just In Time'
-               WHEN ${dim_question_group_key_id}='55' THEN 'Video Examples'
-               WHEN ${dim_question_group_key_id}='56' THEN 'Tools for Enriching Calculus (Appendix)'
-               WHEN ${dim_question_group_key_id}='61' THEN 'True/False Extra Problem'
-          ELSE 'Unknown' END
+    sql:
+              CASE
+               WHEN ${dim_question_group_key_id} = '2' THEN 'Unknown'
+               WHEN ${dim_question_group_key_id} = '3' THEN 'End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '4' THEN 'Simulation'
+               WHEN ${dim_question_group_key_id} = '5' THEN 'Concept Question'
+               WHEN ${dim_question_group_key_id} = '6' THEN 'Unknown'
+               WHEN ${dim_question_group_key_id} = '7' THEN 'Concept Question; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '8' THEN 'Mult Choice Concept With Feedback'
+               WHEN ${dim_question_group_key_id} = '9' THEN 'Reading Question'
+               WHEN ${dim_question_group_key_id} = '10' THEN 'Pre Lab'
+               WHEN ${dim_question_group_key_id} = '11' THEN 'Ch. Test'
+               WHEN ${dim_question_group_key_id} = '12' THEN 'End of Ch. Exercise; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '13' THEN 'Quick Prep'
+               WHEN ${dim_question_group_key_id} = '14' THEN 'Test Bank'
+               WHEN ${dim_question_group_key_id} = '15' THEN 'Active Example'
+               WHEN ${dim_question_group_key_id} = '16' THEN 'Animation Question'
+               WHEN ${dim_question_group_key_id} = '17' THEN 'Test Bank; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '18' THEN 'True False'
+               WHEN ${dim_question_group_key_id} = '19' THEN 'Animation Question; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '20' THEN 'Test Bank; Mult Choice Concept With Feedback'
+               WHEN ${dim_question_group_key_id} = '21' THEN 'Test Bank; True False'
+               WHEN ${dim_question_group_key_id} = '22' THEN 'Quick Quiz'
+               WHEN ${dim_question_group_key_id} = '23' THEN 'Extra Problem'
+               WHEN ${dim_question_group_key_id} = '24' THEN 'Animation Question; End of Ch. Exercise; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '25' THEN 'Post Lab'
+               WHEN ${dim_question_group_key_id} = '26' THEN 'In Lab'
+               WHEN ${dim_question_group_key_id} = '27' THEN 'Concept Question; Mult Choice Concept With Feedback'
+               WHEN ${dim_question_group_key_id} = '28' THEN 'Active Figure; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '29' THEN 'Mult Choice Concept With Feedback; End of Ch. Exercise; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '30' THEN 'Active Figure'
+               WHEN ${dim_question_group_key_id} = '31' THEN 'Extra Problem; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '32' THEN 'Tools For Enriching Calculus'
+               WHEN ${dim_question_group_key_id} = '33' THEN 'Tools For Enriching Calculus; Quick Prep'
+               WHEN ${dim_question_group_key_id} = '34' THEN 'Quick Prep; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '35' THEN 'Mult Choice Concept With Feedback; Quick Prep'
+               WHEN ${dim_question_group_key_id} = '36' THEN 'Concept Question; Animation Question'
+               WHEN ${dim_question_group_key_id} = '37' THEN 'Concept Question; End of Ch. Exercise; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '38' THEN 'Step By Step'
+               WHEN ${dim_question_group_key_id} = '39' THEN 'Ch. Test; End of Ch. Exercise; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '40' THEN 'Focus On Modeling'
+               WHEN ${dim_question_group_key_id} = '41' THEN 'Extra Problem; Reading Question'
+               WHEN ${dim_question_group_key_id} = '42' THEN 'Cengage Master It'
+               WHEN ${dim_question_group_key_id} = '43' THEN 'Objective Question'
+               WHEN ${dim_question_group_key_id} = '44' THEN 'Step By Step; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '45' THEN 'Ch. Test; Extra Problem'
+               WHEN ${dim_question_group_key_id} = '46' THEN 'Extra Problem; End of Ch. Exercise; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '47' THEN 'Extra Problem; Animation Question'
+               WHEN ${dim_question_group_key_id} = '48' THEN 'Step By Step; Extra Problem'
+               WHEN ${dim_question_group_key_id} = '49' THEN 'Ch. Test; Cengage Master It'
+               WHEN ${dim_question_group_key_id} = '50' THEN 'Extra Problem; In Lab'
+               WHEN ${dim_question_group_key_id} = '51' THEN 'Extra Problem; Cengage Master It'
+               WHEN ${dim_question_group_key_id} = '52' THEN 'Just In Time'
+               WHEN ${dim_question_group_key_id} = '53' THEN 'Active Figure; Extra Problem'
+               WHEN ${dim_question_group_key_id} = '54' THEN 'Focus On Modeling; Extra Problem'
+               WHEN ${dim_question_group_key_id} = '55' THEN 'Video Example'
+               WHEN ${dim_question_group_key_id} = '56' THEN 'Tools For Enriching Calculus; Animation Question'
+               WHEN ${dim_question_group_key_id} = '57' THEN 'Animation Question; Pre Lab'
+               WHEN ${dim_question_group_key_id} = '58' THEN 'Animation Question; Post Lab'
+               WHEN ${dim_question_group_key_id} = '59' THEN 'Extra Problem; Animation Question; Pre Lab'
+               WHEN ${dim_question_group_key_id} = '60' THEN 'Extra Problem; Pre Lab'
+               WHEN ${dim_question_group_key_id} = '61' THEN 'Extra Problem; True False'
+               WHEN ${dim_question_group_key_id} = '62' THEN 'Extra Problem; Concept Question'
+               WHEN ${dim_question_group_key_id} = '63' THEN 'Extra Problem; Post Lab'
+               WHEN ${dim_question_group_key_id} = '64' THEN 'Active Example; Extra Problem'
+               WHEN ${dim_question_group_key_id} = '65' THEN 'Animation Question; Video Example'
+               WHEN ${dim_question_group_key_id} = '66' THEN 'End of Ch. Exercise; Video Example; End of Ch. Problem'
+               WHEN ${dim_question_group_key_id} = '67' THEN 'Extra Problem; Quick Prep'
+               WHEN ${dim_question_group_key_id} = '68' THEN 'Animation Question; Quick Prep'
+               WHEN ${dim_question_group_key_id} = '69' THEN 'Ch. Test; Animation Question'
+               WHEN ${dim_question_group_key_id} = '70' THEN 'Test Bank; Extra Problem'
+     ELSE 'Unknown'
+     END
  ;;
   }
 
