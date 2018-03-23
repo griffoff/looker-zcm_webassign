@@ -3,6 +3,26 @@ include: "/webassign/dim_question.view.lkml"
 view: dim_question_zcm {
   extends: [dim_question]
 
+
+######################################################################################################################################################
+######################################################### Minor Adjustments (Not New Fields) #########################################################
+######################################################################################################################################################
+
+  measure: taq_num_students {
+    description: "The # of student responses used to estimate the average time"
+  }
+
+  dimension: textbookid {
+    sql: ${TABLE}.TEXTBOOK_ID ;;
+  }
+
+
+
+
+#######################################################################################################################################################
+#########################################################      New Fields Added by Chip     ###########################################################
+########################################################################################################################################################
+
   dimension: question_group_name {
     type: string
     group_label: "  Chip's Additions"
@@ -27,12 +47,10 @@ view: dim_question_zcm {
  ;;
   }
 
-  measure: taq_num_students {
-    description: "The # of student responses used to estimate the average time"
-    }
 
 
-############################################################################## TESTING ###############################################################
+
+
   dimension: chapter_order {
     type: string
     sql: CASE WHEN ${chapter}= '1' THEN '01'
@@ -253,7 +271,7 @@ view: dim_question_zcm {
       group_label: "Dynamic Dimensions"
       sql: CASE WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
               WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
-              WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Question Features' THEN ${question_help_features_zcm.features}
+              WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Question Features' THEN ${zcm_question_help_features.features}
               WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Avg Question Time Bucket' THEN ${dim_question.q_avg_time_bucket}
               ELSE NULL
               END ;;

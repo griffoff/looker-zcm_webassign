@@ -7,6 +7,7 @@ include: "*.view.lkml"
 include: "*.dashboard"
 
 
+
 datagroup: zcm_webassign_default_datagroup {
   # sql_trigger: SELECT MAX(id) FROM etl_log;;
   max_cache_age: "1 hour"
@@ -29,18 +30,22 @@ join: dim_question {
   view_label: "Question"
 }
 
-join: question_is_used_zcm {
-  sql_on: ${dim_question.dim_question_id}=${question_is_used_zcm.dim_question_id} ;;
+join: dim_deployment {
+  view_label: "Deployments"
+}
+
+join: zcm_question_is_used {
+  sql_on: ${dim_question.dim_question_id}=${zcm_question_is_used.dim_question_id} ;;
   relationship: one_to_one
   }
 
-join: question_help_features_zcm {
-    sql_on: ${dim_question.dim_question_id} = ${question_help_features_zcm.dim_question_id} ;;
+join: zcm_question_help_features {
+    sql_on: ${dim_question.dim_question_id} = ${zcm_question_help_features.dim_question_id} ;;
     relationship: one_to_many
   }
 
-  join: topquestions_zcm {
-    sql_on: ${dim_question.dim_question_id} = ${topquestions_zcm.dim_question_id} ;;
+  join: zcm_topquestions {
+    sql_on: ${dim_question.dim_question_id} = ${zcm_topquestions.dim_question_id} ;;
     relationship: one_to_one
   }
 

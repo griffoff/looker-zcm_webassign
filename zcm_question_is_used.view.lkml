@@ -1,7 +1,7 @@
 # If necessary, uncomment the line below to include explore_source.
 
 # include: "webassign.model.lkml"
-view: question_is_used_zcm {
+view: zcm_question_is_used {
   view_label: " Chip's Additions"
   derived_table: {
     sql: SELECT

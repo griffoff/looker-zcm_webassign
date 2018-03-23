@@ -1,4 +1,4 @@
-view: topquestions_zcm {
+view: zcm_topquestions {
   view_label: " Chip's Additions - Ranking"
   derived_table: {
     sql_trigger_value: select count(*) from WA2ANALYTICS.SECTIONSLESSONS ;;

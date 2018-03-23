@@ -14,7 +14,7 @@
 #
 # Join to Model:           Left Joins to dim_question on dim_question_id with a one_to_many relationship
 
-view: question_help_features_zcm {
+view: zcm_question_help_features {
   view_label: " Chip's Additions"
   derived_table: {
     sql_trigger_value: select count(*) from WA2ANALYTICS.DIM_QUESTION ;;
