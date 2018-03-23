@@ -19,6 +19,10 @@ view: dim_question_zcm {
 
 
 
+
+
+
+
 ########################################################################################################################################################
 #########################################################      New Fields Added by Chip      ###########################################################
 ########################################################################################################################################################
@@ -104,8 +108,6 @@ view: dim_question_zcm {
 
 
 
-
-
   dimension: chapter_order {
     type: string
     sql: CASE WHEN ${chapter}= '1' THEN '01'
@@ -119,6 +121,14 @@ view: dim_question_zcm {
               WHEN ${chapter}= '9' THEN '09'
               ELSE ${chapter} END;;
   }
+
+
+
+
+
+
+############################# Question Help Features #############################
+
 
   dimension: question_features {
     type: string
@@ -267,6 +277,13 @@ view: dim_question_zcm {
     sql: case when ${has_watch_it}='Yes' THEN ${dim_question_id} end;;
   }
 
+
+
+
+
+######################## Question Difficulty Fields #########################
+
+
   parameter: qdiff_bucket_size {
     default_value: "10"
     view_label: " Chip's Additions"
@@ -287,6 +304,10 @@ view: dim_question_zcm {
     sql: ${qdiff_difficulty_index} - mod(${qdiff_difficulty_index}, {% parameter qdiff_bucket_size %}) ;;
   }
 
+
+
+######################## Avg. Question Time Fields  ##########################
+
   dimension: q_avg_time_bucket {
     label: "Avg Question Time Bucket"
     description: "Buckets Avg Question time into groups"
@@ -297,65 +318,84 @@ view: dim_question_zcm {
     sql: ${TABLE}.taq_avg_time ;;
   }
 
-  dimension: dynamic_dimension {
-    label_from_parameter: dynamic_dimension_picker
+
+
+
+
+##################### Dynamic Fields for Dashboards ##########################
+
+
+  parameter: dynamic_dimension_picker {
     view_label: " Chip's Additions"
-    group_label: "Dynamic Dimensions"
-    sql: CASE WHEN {% parameter dynamic_dimension_picker %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
-              WHEN {% parameter dynamic_dimension_picker %} = 'Avg Question Time Bucket' THEN ${dim_question.q_avg_time_bucket}
-              ELSE NULL
-              END  ;;
-#--              WHEN {% parameter dynamic_dimension_picker %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
-    }
+    label: "Dimension Picker"
+    description: "Select the dimension you wish to use in the dashboard element"
+    default_value: "QDiff Difficulty Index Bucket"
+    allowed_value: {label: "QDiff Difficulty Index Bucket" value: "QDiff Difficulty Index Bucket"}
+    allowed_value: {label:  "Question Features" value: "Question Features"}
+    allowed_value: {label:  "Assignment Type" value: "Assignment Type"}
+    allowed_value: {label:  "Avg Question Time Bucket" value: "Avg Question Time Bucket"}
+  }
 
-    parameter: dynamic_dimension_picker {
-      view_label: " Chip's Additions"
-      label: "Dimension Picker"
-      description: "Select the dimension you wish to use in the dashboard element"
-      default_value: "QDiff Difficulty Index Bucket"
-      allowed_value: {label: "QDiff Difficulty Index Bucket" value: "QDiff Difficulty Index Bucket"}
-      allowed_value: {label:  "Question Features" value: "Question Features"}
-      allowed_value: {label:  "Assignment Type" value: "Assignment Type"}
-      allowed_value: {label:  "Avg Question Time Bucket" value: "Avg Question Time Bucket"}
-    }
-
-    dimension: dynamic_dimension_pivot {
-      label: "Dynamic Dimension (Pivot)"
-      label_from_parameter: dynamic_dimension_picker_pivot
-      view_label: " Chip's Additions"
-      group_label: "Dynamic Dimensions"
-      sql: CASE WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
-              WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
-              WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Question Features' THEN ${zcm_question_help_features.features}
-              WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Avg Question Time Bucket' THEN ${dim_question.q_avg_time_bucket}
-              ELSE NULL
-              END ;;
-  #              WHEN {% parameter dynamic_dimension_picker %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
-  #             WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
-      }
+          dimension: dynamic_dimension {
+            label_from_parameter: dynamic_dimension_picker
+            view_label: " Chip's Additions"
+            group_label: "Dynamic Dimensions"
+            sql: CASE WHEN {% parameter dynamic_dimension_picker %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
+                      WHEN {% parameter dynamic_dimension_picker %} = 'Avg Question Time Bucket' THEN ${dim_question.q_avg_time_bucket}
+                      ELSE NULL
+                      END  ;;
+        #--              WHEN {% parameter dynamic_dimension_picker %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
+            }
 
 
 
-      parameter: dynamic_dimension_picker_pivot {
-        view_label: " Chip's Additions"
-        label: "Dimension Picker (Pivot)"
-        description: "Select the dimension you wish to use in the dashboard element"
-        default_value: "Question Features"
-        allowed_value: {label: "QDiff Difficulty Index Bucket" value: "QDiff Difficulty Index Bucket"}
-        allowed_value: {label:  "Question Features" value: "Question Features"}
-        allowed_value: {label:  "Assignment Type" value: "Assignment Type"}
-        allowed_value: {label:  "Avg Question Time Bucket" value: "Avg Question Time Bucket"}
 
-      }
 
-      measure: avg_deployments_per_question {
-        label: "Avg # Times Question Deployed"
-        description: "The average number of section lessons (assignments) for each master question"
-        type: number
-        view_label: " Chip's Additions"
-        sql: ${dim_deployment.count}/nullif(${count}, 0) ;;
-        value_format_name: decimal_1
-      }
+  parameter: dynamic_dimension_picker_pivot {
+    view_label: " Chip's Additions"
+    label: "Dimension Picker (Pivot)"
+    description: "Select the dimension you wish to use in the dashboard element"
+    default_value: "Question Features"
+    allowed_value: {label: "QDiff Difficulty Index Bucket" value: "QDiff Difficulty Index Bucket"}
+    allowed_value: {label:  "Question Features" value: "Question Features"}
+    allowed_value: {label:  "Assignment Type" value: "Assignment Type"}
+    allowed_value: {label:  "Avg Question Time Bucket" value: "Avg Question Time Bucket"}
+  }
+
+            dimension: dynamic_dimension_pivot {
+              label: "Dynamic Dimension (Pivot)"
+              label_from_parameter: dynamic_dimension_picker_pivot
+              view_label: " Chip's Additions"
+              group_label: "Dynamic Dimensions"
+              sql: CASE WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
+                      WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
+                      WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Question Features' THEN ${zcm_question_help_features.features}
+                      WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Avg Question Time Bucket' THEN ${dim_question.q_avg_time_bucket}
+                      ELSE NULL
+                      END ;;
+          #              WHEN {% parameter dynamic_dimension_picker %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
+          #             WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
+              }
+
+
+
+  measure: avg_sectionslessons_per_question {
+    label: "Avg # Times in Section Lesson"
+    description: "The average number of section lessons (assignments) for each master question"
+    type: number
+    view_label: " Chip's Additions"
+    sql: ${sectionslessons.count}/nullif(${count}, 0) ;;
+    value_format_name: decimal_1
+  }
+
+  measure: avg_deployments_per_question {
+    label: "Avg # Times Deployed"
+    description: "The average number of users each master question was deployed to"
+    type: number
+    view_label: " Chip's Additions"
+    sql: ${dim_deployment.count}/nullif(${count}, 0) ;;
+    value_format_name: decimal_1
+   }
 
 
 
