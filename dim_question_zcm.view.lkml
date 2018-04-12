@@ -4,6 +4,7 @@ view: dim_question_zcm {
   extends: [dim_question]
 
 
+
 ######################################################################################################################################################
 ######################################################### Minor Adjustments (Not New Fields) #########################################################
 ######################################################################################################################################################
@@ -368,7 +369,6 @@ view: dim_question_zcm {
               view_label: " Chip's Additions"
               group_label: "Dynamic Dimensions"
               sql: CASE WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
-                      WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
                       WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Question Features' THEN ${zcm_question_help_features.features}
                       WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Avg Question Time Bucket' THEN ${dim_question.q_avg_time_bucket}
                       ELSE NULL
@@ -379,14 +379,7 @@ view: dim_question_zcm {
 
 
 
-  measure: avg_sectionslessons_per_question {
-    label: "Avg # Times in Section Lesson"
-    description: "The average number of section lessons (assignments) for each master question"
-    type: number
-    view_label: " Chip's Additions"
-    sql: ${sectionslessons.count}/nullif(${count}, 0) ;;
-    value_format_name: decimal_1
-  }
+
 
   measure: avg_deployments_per_question {
     label: "Avg # Times Deployed"
@@ -396,6 +389,19 @@ view: dim_question_zcm {
     sql: ${dim_deployment.count}/nullif(${count}, 0) ;;
     value_format_name: decimal_1
    }
+
+###################################################################################################################################################################
+########################################### WAITING TO SEE IF SECTIONSLESSONS TABLE WILL BE INCLUDED IN MODEL #####################################################
+###################################################################################################################################################################
+
+  #   measure: avg_sectionslessons_per_question {
+#     label: "Avg # Times in Section Lesson"
+#     description: "The average number of section lessons (assignments) for each master question"
+#     type: number
+#     view_label: " Chip's Additions"
+#     sql: ${sectionslessons.count}/nullif(${count}, 0) ;;
+#     value_format_name: decimal_1
+#   }
 
 
 
