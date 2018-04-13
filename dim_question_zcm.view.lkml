@@ -3,7 +3,9 @@ include: "/webassign/dim_question.view.lkml"
 view: dim_question_zcm {
   extends: [dim_question]
 
-
+# dimension: dim_question_id {}
+#
+# dimension: question_id {}
 
 ######################################################################################################################################################
 ######################################################### Minor Adjustments (Not New Fields) #########################################################

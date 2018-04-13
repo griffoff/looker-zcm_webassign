@@ -4,16 +4,17 @@
 view: zcm_question_is_used {
   view_label: " Chip's Additions"
   derived_table: {
+    ####### Hiding Sections Lessons until I know if it will be added to the model later
     sql: SELECT
         dim_question.DIM_QUESTION_ID  AS DIM_QUESTION_ID,
         dim_question.question_id as QUESTION_ID,
         dim_question.dim_textbook_id as dim_textbook_id,
         COUNT(DISTINCT dim_deployment.dim_deployment_id ) AS DEPLOYMENTS_COUNT,
-       count(distinct sectionslessons.id) as sectionslessons_count
+--       count(distinct sectionslessons.id) as sectionslessons_count
 FROM ${responses.SQL_TABLE_NAME} AS responses
 LEFT JOIN WA2ANALYTICS.DIM_QUESTION  AS dim_question ON responses.QUESTIONID = dim_question.QUESTION_ID
 LEFT JOIN WA2ANALYTICS.DIM_DEPLOYMENT  AS dim_deployment ON responses.SECTIONSLESSONSID = dim_deployment.DEPLOYMENT_ID
-left join WA2ANALYTICS.SECTIONSLESSONS as sectionslessons on responses.sectionslessonsid = sectionslessons.id
+-- left join WA2ANALYTICS.SECTIONSLESSONS as sectionslessons on responses.sectionslessonsid = sectionslessons.id
       GROUP BY 1,2,3
       ;;
     sql_trigger_value: SELECT count(*) FROM WA2ANALYTICS.SECTIONSLESSONS ;;

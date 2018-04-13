@@ -40,6 +40,7 @@ join: zcm_question_is_used {
 join: zcm_question_help_features {
     sql_on: ${dim_question.dim_question_id} = ${zcm_question_help_features.dim_question_id} ;;
     relationship: one_to_many
+    type: left_outer
   }
 
   join: zcm_topquestions {
