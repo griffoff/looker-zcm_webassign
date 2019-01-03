@@ -11,12 +11,22 @@ view: dim_question_zcm {
 ######################################################### Minor Adjustments (Not New Fields) #########################################################
 ######################################################################################################################################################
 
-  measure: taq_num_students {
-    description: "The # of student responses used to estimate the average time"
-  }
+#   measure: taq_num_students {
+#     description: "The # of student responses used to estimate the average time"
+#   }
 
   dimension: textbookid {
     sql: ${TABLE}.TEXTBOOK_ID ;;
+  }
+
+
+  measure: count_questions {
+    drill_fields: [questions*]
+  }
+
+
+  set: questions {
+    fields: [question_id, question_code]
   }
 
 
@@ -33,6 +43,7 @@ view: dim_question_zcm {
   dimension: question_group_name {
     type: string
     group_label: "  Chip's Additions"
+    hidden: yes
     sql:
               CASE
                WHEN ${dim_question_group_key_id} = '2' THEN 'Unknown'
@@ -123,11 +134,187 @@ view: dim_question_zcm {
               WHEN ${chapter}= '8' THEN '08'
               WHEN ${chapter}= '9' THEN '09'
               ELSE ${chapter} END;;
+              hidden: no
+              label: "Chapter Order"
+              view_label: "Question"
+  }
+
+################################# Question Types #################################
+
+
+  dimension: question_type_code {
+    type: string
+    label: "Question Type Code"
+    view_label: " Chip's Additions"
+    group_label: "Question Types"
+    description: "Breaks out the different Stats Question Types (i.e. JMP, LAB, SIP, DS, CHDS, & CQ)"
+    sql:     CASE WHEN (UPPER(${question_code}) LIKE '%.JMP.%'   AND upper(${question_code}) LIKE '%.LAB.%') THEN 'JMP Lab'
+                  WHEN  UPPER(${question_code}) LIKE '%.JMP.%'   THEN 'JMP'
+                  WHEN  UPPER(${question_code}) LIKE '%.LAB.%'   THEN 'LAB'
+                  WHEN  UPPER(${question_code}) LIKE '%.SIP.%'   THEN 'SIP'
+                  WHEN  UPPER(${question_code}) LIKE '%.DS.%'    THEN 'DS'
+                  WHEN  UPPER(${question_code}) LIKE '%.CHDS.%'  THEN 'CHDS'
+                  WHEN  UPPER(${question_code}) LIKE '%.CQ.%'    THEN 'CQ'
+                  WHEN  UPPER(${question_code}) LIKE '%.CTX.%'   THEN 'ctx'
+                  WHEN  UPPER(${question_code}) LIKE '%.TPS.%'   THEN 'TPS'
+                  WHEN  UPPER(${question_code}) LIKE '%.BIO.%'   THEN 'bio'
+                  WHEN  UPPER(${question_code}) LIKE '% PSG.%'   THEN 'PSG'
+                  WHEN  UPPER(${question_code}) LIKE '%.IVV.%'   THEN 'IVV'
+                  WHEN  UPPER(${question_code}) LIKE '%.OQ.%'    THEN 'Oq'
+                  WHEN  UPPER(${question_code}) LIKE '%.CQ.%'    THEN 'CQ'
+                  WHEN  UPPER(${question_code}) LIKE '%.AMT.%'   THEN 'AMT'
+                  WHEN  UPPER(${question_code}) LIKE '%.IT.%'    THEN 'IT'
+                  WHEN  UPPER(${question_code}) LIKE '%.PLE.%'   THEN 'PLE'
+                ELSE 'Other Question Types'
+                END;;
+  }
+
+  dimension: question_type_group {
+    type: string
+    label: "Question Type Group"
+    description: "The Discipline + if the question type is new or established"
+    view_label: " Chip's Additions"
+    group_label: "Question Types"
+    sql:     CASE WHEN (UPPER(${question_code}) LIKE '%.JMP.%'   AND upper(${question_code}) LIKE '%.LAB.%') THEN  'Statistics'
+                  WHEN  UPPER(${question_code}) LIKE '%.JMP.%'   THEN  'Statistics'
+                  WHEN  UPPER(${question_code}) LIKE '%.LAB.%'   THEN  'Statistics'
+                  WHEN  UPPER(${question_code}) LIKE '%.SIP.%'   THEN  'Statistics'
+                  WHEN  UPPER(${question_code}) LIKE '%.DS.%'    THEN  'Statistics'
+                  WHEN  UPPER(${question_code}) LIKE '%.CHDS.%'  THEN  'Statistics'
+                  WHEN  (UPPER(${question_code}) LIKE '%.CQ.%'  AND ${dim_discipline.discipline_name} = 'Statistics')  THEN  'Statistics'
+                  WHEN  (UPPER(${question_code}) LIKE '%.CQ.%'  AND ${dim_discipline.discipline_name} = 'Physics') THEN  'Physics - Established'
+                  WHEN  UPPER(${question_code}) LIKE '%.CTX.%'   THEN  'Physics - New'
+                  WHEN  UPPER(${question_code}) LIKE '%.TPS.%'   THEN  'Physics - New'
+                  WHEN  UPPER(${question_code}) LIKE '%.BIO.%'   THEN  'Physics - New'
+                  WHEN  UPPER(${question_code}) LIKE '% PSG.%'   THEN  'Physics - New'
+                  WHEN  UPPER(${question_code}) LIKE '%.IVV.%'   THEN  'Physics - New'
+                  WHEN  UPPER(${question_code}) LIKE '%.OQ.%'    THEN  'Physics - Established'
+                  WHEN  UPPER(${question_code}) LIKE '%.CQ.%'    THEN  'Physics - Established'
+                  WHEN  UPPER(${question_code}) LIKE '%.AMT.%'   THEN  'Physics - Established'
+                  WHEN  UPPER(${question_code}) LIKE '%.IT.%'    THEN  'Physics - New'
+                  WHEN  UPPER(${question_code}) LIKE '%.PLE.%'   THEN  'Physics - Established'
+                  ELSE 'Other'
+                  END
+;;
+  }
+
+  dimension: question_types {
+    type: string
+    label: "Question Type"
+    view_label: " Chip's Additions"
+    group_label: "Question Types"
+    description: "Breaks out the different Stats Question Types (i.e. Concept Questions, Objective Questions, Interactive Video Vignettes, etc.)"
+    sql:     CASE
+                WHEN (UPPER(${question_code}) LIKE  '%.JMP.%'   AND upper(${question_code}) LIKE '%.LAB.%') THEN 'JMP Simulation (Lab)'
+                WHEN  UPPER(${question_code})  LIKE  '%.JMP.%'      THEN 'JMP Simulation'
+                WHEN  UPPER(${question_code})  LIKE  '%.LAB.%'      THEN 'Labs'
+                WHEN  UPPER(${question_code})  LIKE  '%.SIP.%'      THEN 'Stats in Practice (Video)'
+                WHEN  UPPER(${question_code})  LIKE  '%.DS.%'       THEN 'Data Set'
+                WHEN  UPPER(${question_code})  LIKE  '%.CHDS.%'     THEN 'Challenge Data Set'
+                WHEN  UPPER(${question_code})  LIKE  '%.CQ.%'       THEN 'Conceptual'
+                WHEN  UPPER(${question_code})  LIKE  '%.CTX.%'      THEN '*Content-Rich'
+                WHEN  UPPER(${question_code})  LIKE  '%.TPS.%'      THEN '*Think-Pair-Share'
+                WHEN  UPPER(${question_code})  LIKE  '%.BIO.%'      THEN '*Life Science'
+                WHEN  UPPER(${question_code})  LIKE  '%.PSG.%'      THEN '*Passage Problems'
+                WHEN  UPPER(${question_code})  LIKE  '%.IVV.%'      THEN '*Interactive Video Vignettes'
+                WHEN  UPPER(${question_code})  LIKE  '%.OQ.%'       THEN 'Objective'
+                WHEN  UPPER(${question_code})  LIKE  '%.AMT.%'      THEN 'Analysis Model Tutorials'
+                WHEN  UPPER(${question_code})  LIKE  '%.IT.%'       THEN '*Integrated Tutorials'
+                WHEN  UPPER(${question_code})  LIKE  '%.PLE.%'      THEN 'Prolecture Explorations'
+                ELSE 'Other'
+                END;;
   }
 
 
+  dimension: question_types_new_breakout {
+    type: string
+    label: "Question Type Group (New Breakout)"
+    view_label: " Chip's Additions"
+    group_label: "Question Types"
+    description: "Groups existing question types as well as other question types into a bucket and breaks out the new question types"
+    sql:     CASE
+                WHEN (UPPER(${question_code}) LIKE  '%.JMP.%'   AND upper(${question_code}) LIKE '%.LAB.%') THEN 'Statistics'
+                WHEN  UPPER(${question_code})  LIKE  '%.JMP.%'      THEN 'Statistics'
+                WHEN  UPPER(${question_code})  LIKE  '%.LAB.%'      THEN 'Statistics'
+                WHEN  UPPER(${question_code})  LIKE  '%.SIP.%'      THEN 'Statistics'
+                WHEN  UPPER(${question_code})  LIKE  '%.DS.%'       THEN 'Statistics'
+                WHEN  UPPER(${question_code})  LIKE  '%.CHDS.%'     THEN 'Statistics'
+                WHEN  (UPPER(${question_code}) LIKE '%.CQ.%'  AND ${dim_discipline.discipline_name} = 'Statistics')  THEN  'Statistics'
+                WHEN  (UPPER(${question_code}) LIKE '%.CQ.%'  AND ${dim_discipline.discipline_name} = 'Physics') THEN  'Physics - Established'
+                WHEN  UPPER(${question_code})  LIKE  '%.CTX.%'      THEN '*Content-Rich'
+                WHEN  UPPER(${question_code})  LIKE  '%.TPS.%'      THEN '*Think-Pair-Share'
+                WHEN  UPPER(${question_code})  LIKE  '%.BIO.%'      THEN '*Life Science'
+                WHEN  UPPER(${question_code})  LIKE  '%.PSG.%'      THEN '*Passage Problems'
+                WHEN  UPPER(${question_code})  LIKE  '%.IVV.%'      THEN '*Interactive Video Vignettes'
+                WHEN  UPPER(${question_code})  LIKE  '%.OQ.%'       THEN 'Physics - Established'
+                WHEN  UPPER(${question_code})  LIKE  '%.AMT.%'      THEN 'Physics - Established'
+                WHEN  UPPER(${question_code})  LIKE  '%.IT.%'       THEN '*Integrated Tutorials'
+                WHEN  UPPER(${question_code})  LIKE  '%.PLE.%'      THEN 'Physics - Established'
+                ELSE 'Other'
+                END;;
+  }
 
 
+# Would like to create a dynamic field that checks the first created date of a question type and marks it as new based on either being new to the current edition or within a defined timeframe
+#   dimension: recent_question_type {
+#     type: string
+#
+#     label: "Question Type Recency"
+#     description: "Denotes whether or not the question type has been recently added. Recency is defined by the user with the filter"
+#     sql: ;;
+#   }
+
+  parameter: dynamic_question_type_granularity_picker {
+    view_label: " Chip's Additions (New)"
+    label: "Question Type Granularity"
+    description: "Select if you want to look at question type bucketed into new, established, & other groups or at the question type level"
+    default_value: "Question Type"
+    allowed_value: {label: "Question Type" value: "Question Type"}
+    allowed_value: {label:  "Question Type Group" value: "Question Type Group"}
+  }
+
+  dimension: dynamic_question_type_lvl {
+    label_from_parameter: dynamic_question_type_granularity_picker
+    view_label: " Chip's Additions (New)"
+    group_label: "Dynamic Question Type Level"
+    sql: CASE WHEN {% parameter dynamic_question_type_granularity_picker %} = 'Question Type' THEN ${question_types}
+                      WHEN {% parameter dynamic_question_type_granularity_picker %} = 'Question Type Group' THEN ${question_type_group}
+                      ELSE NULL
+                      END  ;;
+        #--              WHEN {% parameter dynamic_dimension_picker %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  measure: earliest_created_date {
+    label: "Earliest Created Date (Question)"
+    type: date
+    view_label: " Chip's Additions"
+    sql: min(${created_et_raw}) ;;
+    convert_tz: no
+  }
+
+  measure: question_author_count {
+    type: count_distinct
+    view_label: " Chip's Additions"
+    sql: ${TABLE}.author_user_id ;;
+  }
 
 
 ############################# Question Help Features #############################
@@ -153,6 +340,12 @@ view: dim_question_zcm {
               CASE WHEN ${has_watch_it}='Yes' THEN 'Watch It'
               ELSE '' END ;;
   }
+
+
+
+
+
+
 
   measure: ebook_section_count{
     label: "# Questions - Ebook"
@@ -295,18 +488,27 @@ view: dim_question_zcm {
 
   dimension: qdiff_difficulty_index_bucket {
     label: "Difficulty Index Bucket"
+    view_label: " Chip's Additions"
     description: "Tiers for the Qdiff Difficulty Index (Question Difficulty)"
-    view_label:  " Chip's Additions"
     sql: truncate((${qdiff_difficulty_index} - mod(${qdiff_difficulty_index}, {% parameter qdiff_bucket_size %})))||' - '||truncate((${qdiff_difficulty_index}-mod(${qdiff_difficulty_index}, {% parameter qdiff_bucket_size %})+{% parameter qdiff_bucket_size %}));;
     order_by_field: qdiff_dynamic_sort_field
   }
 
   dimension: qdiff_dynamic_sort_field {
     type: number
+    view_label: " Chip's Additions"
     hidden: yes
     sql: ${qdiff_difficulty_index} - mod(${qdiff_difficulty_index}, {% parameter qdiff_bucket_size %}) ;;
   }
 
+  measure: avg_qdiff_difficulty_index {
+    label: "Avg. Qdiff Index"
+    group_label: "Question Difficulty"
+    type: average_distinct
+    sql_distinct_key: ${dim_question_id} ;;
+    sql: ${TABLE}.QDIFF_DIFFICULTY_INDEX ;;
+    value_format_name: decimal_2
+  }
 
 
 ######################## Avg. Question Time Fields  ##########################
@@ -315,7 +517,7 @@ view: dim_question_zcm {
     label: "Avg Question Time Bucket"
     description: "Buckets Avg Question time into groups"
     type: tier
-    view_label: " Chip's Additions"
+
     tiers: [20,40,60,80,100,120,140,150]
     style: integer
     sql: ${TABLE}.taq_avg_time ;;
@@ -334,7 +536,7 @@ view: dim_question_zcm {
     description: "Select the dimension you wish to use in the dashboard element"
     default_value: "QDiff Difficulty Index Bucket"
     allowed_value: {label: "QDiff Difficulty Index Bucket" value: "QDiff Difficulty Index Bucket"}
-    allowed_value: {label:  "Question Features" value: "Question Features"}
+#    allowed_value: {label:  "Question Features" value: "Question Features"}
     allowed_value: {label:  "Assignment Type" value: "Assignment Type"}
     allowed_value: {label:  "Avg Question Time Bucket" value: "Avg Question Time Bucket"}
   }
@@ -360,8 +562,8 @@ view: dim_question_zcm {
     description: "Select the dimension you wish to use in the dashboard element"
     default_value: "Question Features"
     allowed_value: {label: "QDiff Difficulty Index Bucket" value: "QDiff Difficulty Index Bucket"}
-    allowed_value: {label:  "Question Features" value: "Question Features"}
-    allowed_value: {label:  "Assignment Type" value: "Assignment Type"}
+#    allowed_value: {label:  "Question Features" value: "Question Features"}
+#    allowed_value: {label:  "Assignment Type" value: "Assignment Type"}
     allowed_value: {label:  "Avg Question Time Bucket" value: "Avg Question Time Bucket"}
   }
 
@@ -371,12 +573,12 @@ view: dim_question_zcm {
               view_label: " Chip's Additions"
               group_label: "Dynamic Dimensions"
               sql: CASE WHEN {% parameter dynamic_dimension_picker_pivot %} = 'QDiff Difficulty Index Bucket' THEN ${dim_question.qdiff_difficulty_index_bucket}
-                      WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Question Features' THEN ${zcm_question_help_features.features}
                       WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Avg Question Time Bucket' THEN ${dim_question.q_avg_time_bucket}
                       ELSE NULL
                       END ;;
           #              WHEN {% parameter dynamic_dimension_picker %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
           #             WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Assignment Type' THEN ${sectionslessonstype_bucket}
+          #             WHEN {% parameter dynamic_dimension_picker_pivot %} = 'Question Features' THEN ${zcm_question_help_features.features}
               }
 
 
@@ -400,10 +602,13 @@ view: dim_question_zcm {
 #     label: "Avg # Times in Section Lesson"
 #     description: "The average number of section lessons (assignments) for each master question"
 #     type: number
-#     view_label: " Chip's Additions"
+#
 #     sql: ${sectionslessons.count}/nullif(${count}, 0) ;;
 #     value_format_name: decimal_1
 #   }
+
+
+
 
 
 

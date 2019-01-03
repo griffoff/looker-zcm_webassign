@@ -1,75 +1,90 @@
 # If necessary, uncomment the line below to include explore_source.
-
-# include: "webassign.model.lkml"
+include: "/webassign/dim_deployment.view.lkml"
+ include: "/webassign/webassign.model.lkml"
 view: zcm_question_is_used {
   view_label: " Chip's Additions"
   derived_table: {
-    ####### Hiding Sections Lessons until I know if it will be added to the model later
     sql: SELECT
-        dim_question.DIM_QUESTION_ID  AS DIM_QUESTION_ID,
-        dim_question.question_id as QUESTION_ID,
-        dim_question.dim_textbook_id as dim_textbook_id,
-        COUNT(DISTINCT dim_deployment.dim_deployment_id ) AS DEPLOYMENTS_COUNT,
---       count(distinct sectionslessons.id) as sectionslessons_count
-FROM ${responses.SQL_TABLE_NAME} AS responses
-LEFT JOIN WA2ANALYTICS.DIM_QUESTION  AS dim_question ON responses.QUESTIONID = dim_question.QUESTION_ID
-LEFT JOIN WA2ANALYTICS.DIM_DEPLOYMENT  AS dim_deployment ON responses.SECTIONSLESSONSID = dim_deployment.DEPLOYMENT_ID
--- left join WA2ANALYTICS.SECTIONSLESSONS as sectionslessons on responses.sectionslessonsid = sectionslessons.id
+          dq.DIM_QUESTION_ID  AS DIM_QUESTION_ID
+        , dq.question_id as QUESTION_ID
+        , dq.dim_textbook_id as dim_textbook_id
+        , COUNT(DISTINCT dd.dim_deployment_id ) AS DEPLOYMENTS_COUNT
+        , COUNT(DISTINCT ds.dim_section_id) as section_count
+        , count(distinct da.dim_assignment_id) as assignment_count
+        , count(distinct r.id) as response_count
+FROM ${responses.SQL_TABLE_NAME} AS r
+LEFT JOIN FT_OLAP_REGISTRATION_REPORTS.DIM_QUESTION  AS dq ON r.QUESTION_ID = dq.QUESTION_ID
+LEFT JOIN ${dim_deployment.SQL_TABLE_NAME}  AS dd ON r.deployment_id = dd.DEPLOYMENT_ID
+LEFT JOIN ${dim_section.SQL_TABLE_NAME} as ds on dd.section_id = ds.section_id
+LEFT JOIN FT_OLAP_REGISTRATION_REPORTS.DIM_ASSIGNMENT da on dd.assignment_id = da.assignment_id
       GROUP BY 1,2,3
       ;;
-    sql_trigger_value: SELECT count(*) FROM WA2ANALYTICS.SECTIONSLESSONS ;;
+    sql_trigger_value: SELECT count(*) FROM FT_OLAP_REGISTRATION_REPORTS.DIM_DEPLOYMENT ;;
   }
 
   dimension: dim_question_id {
     type: number
     primary_key: yes
-    hidden: yes
+    hidden: no
     sql: ${TABLE}.DIM_QUESTION_ID ;;
   }
   dimension: question_id {
     type: number
     primary_key: no
-    hidden: yes
+    hidden: no
     sql: ${TABLE}.QUESTION_ID ;;
   }
+
+  dimension: dim_textbook_id {}
+
   dimension: deployments_count {
     type: number
     group_label: " Question is Used"
     label: "# Deployments - Question"
     description: "Counts the number of times a question was deployed in an assignment. Used to identify and filter out questions that are not used"
-    hidden: yes
+    hidden: no
     sql: ${TABLE}.DEPLOYMENTS_COUNT ;;
   }
 
   filter: question_is_used {
     type: string
     group_label: " Question is Used"
-    label: "Question is Deployed?"
-    description: "Denotes whether or not a question is used in 1 or more section lessons (# ssignments)"
+    label: "Question is Used?"
+    description: "'Used' is defined as a question that has been deployed and has at least 1 response. "
     default_value: "Yes"
-    sql: CASE WHEN ${sectionslessons_count} >= 1 THEN 'Yes' ELSE 'No' END;;
+    sql: CASE WHEN (${response_count} >= 1 AND ${deployments_count} >=1) THEN 'Yes' ELSE 'No' END;;
   }
 
-  dimension: sectionslessons_count {
+  dimension: response_count {
     type: number
     group_label: " Question is Used"
-    label: "# SectionLesson - Question"
-    description: "Counts the number of times a question is in a section lesson. Used to identify and filter questions that are not used"
-    hidden: yes
-    sql: ${TABLE}.sectionslessons_count ;;
+    label: "# Responses - Question"
+    description: "Counts the number of responses to a particular question."
+    hidden: no
+    sql: ${TABLE}.response_count ;;
   }
 
-  filter: question_is_used_dep {
-    type: string
-    default_value: "Yes"
-    group_label: " Question is Used"
-    label: "Question is Used"
-    description: "Denotes whether or not a question is used in 1 or more deployments (# Students w/ question assigned)"
-    sql: CASE WHEN ${deployments_count} >= 1 THEN 1 ELSE 0 END;;
+dimension: section_count {
+  type: number
+  group_label: " Question is Used"
+  label: "# Sections - Question"
+  description: "Counts the number of sections a particular question appears in."
+  hidden:  no
+  sql: ${TABLE}.section_count ;;
   }
 
+dimension: assignment_count {
+  type: number
+  group_label: " Question is Used"
+  label: "# Assignments - Question"
+  description: "Counts the number of assignments a question appears in."
+  hidden: no
+  sql: ${TABLE}.assignment_count ;;
+}
 
-
+measure: count {
+  type: count
+}
 
 
 }

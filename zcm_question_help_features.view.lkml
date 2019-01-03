@@ -19,7 +19,7 @@
 view: zcm_question_help_features {
   view_label: " Chip's Additions"
   derived_table: {
-    sql_trigger_value: select count(*) from FT_OLAP_REGISTRATION_REPORTS.DIM_QUESTION ;;          ### used to be: WA2ANALYTICS.DIM_QUESTION
+    sql_trigger_value: select count(*) from FT_OLAP_REGISTRATION_REPORTS.DIM_QUESTION ;;          ### used to be: FT_OLAP_REGISTRATION_REPORTS.DIM_QUESTION
     sql: WITH x AS (
         SELECT
               q.dim_question_id AS dim_question_id
@@ -79,7 +79,7 @@ view: zcm_question_help_features {
 
   dimension: features {
     type: string
-    label: "Question Features"
+    label: "Question Help Features"
     group_label: "Question Features"
     sql: ${TABLE}.features ;;
   }

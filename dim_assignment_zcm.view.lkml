@@ -40,6 +40,10 @@ view: dim_assignment_zcm {
  ;;
   }
 
+  dimension: author_name {
+    hidden: no
+    }
+
   dimension: pool {
     description: "Group of similar questions that are randomly selected to fill the spot of one question for an assignment"
   }

@@ -1,37 +1,37 @@
 view: zcm_topquestions {
   view_label: " Chip's Additions - Ranking"
   derived_table: {
-    sql_trigger_value: select count(*) from WA2ANALYTICS.SECTIONSLESSONS ;;
+    sql_trigger_value: select count(*) from ${responses.SQL_TABLE_NAME} ;;
     sql:
        WITH y AS (
     SELECT
           DISTINCT dq.dim_question_id
-        , sl.id
+  --      , dq.question_id
         , dt.dim_textbook_id
         , dd.discipline_id
         , dd.sub_discipline_id
         , dq.dim_textbook_id||'-'||dq.chapter AS text_chapter
-        , count(distinct sl.id) OVER (PARTITION BY dq.dim_question_id) AS question_slcount
-        , count(distinct sl.id) OVER (PARTITION BY dt.dim_textbook_id) AS textbook_slcount
+        , count(distinct r.id) OVER (PARTITION BY dq.dim_question_id) AS question_sectcount
+        , count(distinct r.id) OVER (PARTITION BY dt.dim_textbook_id) AS textbook_sectcount
     FROM ${responses.SQL_TABLE_NAME} r
-    LEFT JOIN WA2ANALYTICS.DIM_QUESTION dq ON dq.QUESTION_ID = r.QUESTIONID
-    LEFT JOIN WA2ANALYTICS.DIM_TEXTBOOK dt ON dq.DIM_TEXTBOOK_ID = dt.DIM_TEXTBOOK_ID
-    LEFT JOIN WA2ANALYTICS.DIM_DISCIPLINE dd ON dt.DIM_DISCIPLINE_ID = dd.DIM_DISCIPLINE_ID
-    LEFT JOIN WA2ANALYTICS.SECTIONSLESSONS sl ON r.SECTIONSLESSONSID = sl.ID
-    WHERE sl.id IS NOT NULL
+    LEFT JOIN FT_OLAP_REGISTRATION_REPORTS.DIM_QUESTION dq ON r.QUESTION_ID = dq.QUESTION_ID
+    LEFT JOIN FT_OLAP_REGISTRATION_REPORTS.DIM_TEXTBOOK dt ON dq.DIM_TEXTBOOK_ID = dt.DIM_TEXTBOOK_ID
+    LEFT JOIN FT_OLAP_REGISTRATION_REPORTS.DIM_DISCIPLINE dd ON dt.DIM_DISCIPLINE_ID = dd.DIM_DISCIPLINE_ID
+    WHERE r.id IS NOT NULL
     ORDER BY 1
     )
     , x AS (
         SELECT
         DISTINCT dim_question_id
-        , question_slcount
-        , textbook_slcount
-        , DENSE_RANK() OVER (PARTITION BY text_chapter ORDER BY  question_slcount DESC ) AS questionsbychapterrank
-        , DENSE_RANK() OVER (PARTITION BY dim_textbook_id ORDER BY question_slcount  DESC ) AS questionsbytextranking
-        , DENSE_RANK() OVER (PARTITION BY sub_discipline_id ORDER BY question_slcount  DESC ) AS questionsbysubdisciplineranking
-        , DENSE_RANK() OVER (PARTITION BY discipline_id ORDER BY question_slcount  DESC ) AS questionsbydisciplineranking
-        , DENSE_RANK() OVER (PARTITION BY sub_discipline_id  ORDER BY textbook_slcount  DESC ) AS textbookbysubdisciplineranking
-        , DENSE_RANK() OVER (PARTITION BY discipline_id ORDER BY textbook_slcount  DESC ) AS textbookbydisciplineranking
+--        , question_id
+        , question_sectcount
+        , textbook_sectcount
+        , DENSE_RANK() OVER (PARTITION BY text_chapter ORDER BY  question_sectcount DESC ) AS questionsbychapterranking
+        , DENSE_RANK() OVER (PARTITION BY dim_textbook_id ORDER BY question_sectcount  DESC ) AS questionsbytextranking
+        , DENSE_RANK() OVER (PARTITION BY sub_discipline_id ORDER BY question_sectcount  DESC ) AS questionsbysubdisciplineranking
+        , DENSE_RANK() OVER (PARTITION BY discipline_id ORDER BY question_sectcount  DESC ) AS questionsbydisciplineranking
+        , DENSE_RANK() OVER (PARTITION BY sub_discipline_id  ORDER BY textbook_sectcount  DESC ) AS textbookbysubdisciplineranking
+        , DENSE_RANK() OVER (PARTITION BY discipline_id ORDER BY textbook_sectcount  DESC ) AS textbookbydisciplineranking
     FROM y
     )
     SELECT *
@@ -62,7 +62,7 @@ view: zcm_topquestions {
     label: "  Rank Top n..."
     default_value: "x.questionsbytextranking"
     type: unquoted
-    allowed_value: {label: "Questions by Chapter" value: "x.questionsbychapterrank"}
+    allowed_value: {label: "Questions by Chapter" value: "x.questionsbychapterranking"}
     allowed_value: {label: "Questions by Textbook" value: "x.questionsbytextranking"}
     allowed_value: {label: "Questions by Sub-Discipline" value: "x.questionsbysubdisciplineranking"}
     allowed_value: {label: "Questions by Discipline" value: "x.questionsbydisciplineranking"}
@@ -74,7 +74,7 @@ view: zcm_topquestions {
     label: "  Rank Top x..."
     default_value: "x.questionsbytextranking"
     type: unquoted
-    allowed_value: {label: "Questions by Chapter" value: "x.questionsbychapterrank"}
+    allowed_value: {label: "Questions by Chapter" value: "x.questionsbychapterranking"}
     allowed_value: {label: "Questions by Textbook" value: "x.questionsbytextranking"}
     allowed_value: {label: "Questions by Sub-Discipline" value: "x.questionsbysubdisciplineranking"}
     allowed_value: {label: "Questions by Discipline" value: "x.questionsbydisciplineranking"}
@@ -90,8 +90,8 @@ view: zcm_topquestions {
   dimension: questionsbydisciplineranking {type: number hidden: no group_label: "  Top N Questions"}
   dimension: textbookbysubdisciplineranking {type: number hidden: no group_label: "  Top N Questions"}
   dimension: textbookbydisciplineranking {type: number hidden: no group_label: "  Top N Questions"}
-  dimension: question_slcount {type: number hidden: no group_label: "  Top N Questions"}
-  dimension: textbook_slcount {type: number hidden: no group_label: "  Top N Questions"}
+  dimension: question_sectcount {type: number hidden: no group_label: "  Top N Questions"}
+  dimension: textbook_sectcount {type: number hidden: no group_label: "  Top N Questions"}
   dimension: rank { type: number group_label: "  Top N Questions" }
   dimension: rank_2 {type: number group_label: "  Top N Questions"}
   dimension: rank_group {
