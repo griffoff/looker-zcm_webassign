@@ -36,6 +36,9 @@ left join x on dt.special_ay_year = x.special_ay_year
     sql: ${TABLE}.ay_value  ;;
   }
 
+
+
+
   dimension: ay_start_year {
     type: number
     sql: left(${special_ay_year},4) ;;

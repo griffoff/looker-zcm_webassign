@@ -15,7 +15,7 @@ view: zcm_school_redesign_registration {
           , time.ay_value as ay_value
           , d.dim_discipline_id
           , d.sub_discipline_name
-          , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as lifetime_redesign_reg
+          , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as school_registrations
           , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_redesign_reg
           , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, d.dim_discipline_id),0) as annual_redesign_topic_reg
     FROM WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.FACT_REGISTRATION  AS r
@@ -46,7 +46,7 @@ view: zcm_school_redesign_registration {
   dimension: sub_discipline_name                       {type: string hidden: no view_label: "    Lvl 1 Aggregations: School/Topic/Academic Year"}
   dimension: annual_redesign_topic_reg       {type: number hidden: no view_label: "    Lvl 1 Aggregations: School/Topic/Academic Year" group_label: "Registration Counts"}
   dimension: annual_redesign_reg      {type: number hidden: no view_label: "   Lvl 2 Aggregations: School/Academic Year"  group_label: "Registration Counts"}
-  dimension: lifetime_redesign_reg           {type: number hidden: no view_label: "  Lvl 3 Aggregations: School" group_label: "Registration Counts"}
+  dimension: school_registrations           {type: number hidden: no view_label: "  Lvl 3 Aggregations: School" group_label: "Registration Counts"}
 
 
   dimension: ay_start_year {

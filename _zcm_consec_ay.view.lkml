@@ -18,7 +18,7 @@ derived_table: {
           , s.school_id as school_id
           , time.special_ay_year as special_ay_year
           , time.ay_value as ay_value
-          , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as lifetime_redesign_reg
+          , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as school_registrations
           , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_redesign_reg
           FROM WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.FACT_REGISTRATION  AS r
           LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_SCHOOL  AS s ON r.DIM_SCHOOL_ID = s.DIM_SCHOOL_ID
@@ -130,7 +130,7 @@ measure: num_schools {
 
 }
 
-dimension: lifetime_redesign_reg            {hidden: yes type: number}
+dimension: school_registrations            {hidden: yes type: number}
 dimension: annual_redesign_reg              {hidden: yes type: number}
 dimension: annual_redesign_topic_reg        {hidden: yes type: number}
 

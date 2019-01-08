@@ -1,11 +1,11 @@
 include: "*.view.lkml"
 include: "zcm_redesign_personas.model.lkml"
 include: "/webassign/*.model.lkml"
-include: "_zcm_all_registrations.view.lkml"
+include: "_zcm_lifetime_registrations.view.lkml"
 include: "_zcm_targeted_registrations.view.lkml"
 include: "_zcm_cg_registrations.view.lkml"
 include: "dim_textbook_zcm.view.lkml"
-include: "_zcm_all_registrations.view.lkml"
+include: "_zcm_lifetime_registrations.view.lkml"
 include: "zcm_redesign_personas.model.lkml"
 include: "/webassign/dim_textbook.view.lkml"
 
@@ -43,7 +43,7 @@ view: _redesign_multiview_fields {
     view_label: "           Parameters & Filters"
     hidden:  no
     description: "For use in dashboards as a dynamic title tile. Useless in explore. Please hide"
-    sql: min(${_zcm_all_registrations.ay_start_year}) ;;
+    sql: min(${_zcm_lifetime_registrations.ay_start_year}) ;;
     html: <h2> {{ value }}-Present </h2>;;
   }
 

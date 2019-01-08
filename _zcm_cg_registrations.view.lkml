@@ -1,64 +1,107 @@
-
+#######################################################################################################################################################################################################
+################################ NOTE DATE RANGES FOR CORE GATEWAY AND TARGETED REDESIGN COURSES ARE THE SAME. THE PARAMETER IS LOCATED IN THE TARGETED VIEW      #####################################
+################################ THIS IS DIFFERENT FROM THE CORE_GATEWAY_THRESHOLD_RANGE PARAMETER IN _ZCM_SCHOOL_FILTER VIEW WHICH NEEDS TO BE MORE RESTRICTIVE  #####################################
+#######################################################################################################################################################################################################
 
 include: "/webassign/*.model.lkml"
 include: "fact_registration_zcm.view.lkml"
 include: "/webassign/dim_discipline.view.lkml"
 include: "_redesign_multiview_fields.view.lkml"
+include: "_zcm_targeted_registrations.view.lkml"
+
 
 
 view: _zcm_cg_registrations {
-#  extends: [fact_registration_zcm]
 view_label: "   Core Gateway Registrations"
   derived_table: {
     sql:
-    SELECT
-            DISTINCT  s.dim_school_id as dim_school_id
-          , s.school_id as school_id
-          , time.special_ay_year as special_ay_year
-          , time.ay_value as ay_value
-          , d.dim_discipline_id as dim_discipline_id
-          , d.sub_discipline_name as sub_discipline_name
-          , coalesce(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as lifetime_cg_reg
-          , coalesce(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_cg_reg
-          , coalesce(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, d.dim_discipline_id),0) as annual_topic_cg_reg
-          , COALESCE(COUNT(DISTINCT sec.course_id) OVER (PARTITION BY s.dim_school_id),0) as lifetime_course_count
-          , COALESCE(COUNT(DISTINCT sec.course_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_course_count
-          , COALESCE(COUNT(DISTINCT sec.course_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, d.dim_discipline_id),0) as annual_topic_course_count
-          , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id),0) as lifetime_section_count
-          , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_section_count
-          , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, d.dim_discipline_id),0) as annual_topic_section_count
-          , COALESCE(COUNT(DISTINCT d.dim_discipline_id) OVER (PARTITION BY s.dim_school_id),0) as lifetime_topic_count
-          , COALESCE(COUNT(DISTINCT d.dim_discipline_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_topic_count
+SELECT
+              DISTINCT r.fact_registration_id as fact_registration_id
+            , s.dim_school_id as dim_school_id
+            , s.school_id as school_id
+            , time.special_ay_year as special_ay_year
+            , time.ay_value as ay_value
+            , d.dim_discipline_id as dim_discipline_id
+            , d.sub_discipline_name as sub_discipline_name
+            , topic.topic as topic
+            , sec.course_id as course_id
+            , sec.course_instructor_id as course_instructor_id
+            , sec.dim_section_id as dim_section_id
+            , sec.section_instructor_id as section_instructor_id
+            , r.registrations as registrations
+            , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as lifetime_cg_reg
+            , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_cg_reg
+            , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, topic.topic),0) as annual_topic_cg_reg
+            , COALESCE(COUNT(DISTINCT sec.course_id) OVER (PARTITION BY s.dim_school_id),0) as school_courses
+            , COALESCE(COUNT(DISTINCT sec.course_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_school_courses
+            , COALESCE(COUNT(DISTINCT sec.course_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, topic.topic),0) as annual_school_topic_courses
+            , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id),0) as school_sections
+            , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_school_sections
+            , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, topic.topic),0) as annual_school_topic_sections
+            , COALESCE(COUNT(DISTINCT topic.topic) OVER (PARTITION BY s.dim_school_id),0) as school_topics
+            , COALESCE(COUNT(DISTINCT topic.topic) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_school_topics
     FROM WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.FACT_REGISTRATION  AS r
     LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_SCHOOL  AS s ON r.DIM_SCHOOL_ID = s.DIM_SCHOOL_ID
     LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_SECTION AS sec on r.DIM_SECTION_ID = sec.DIM_SECTION_ID
     LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_TEXTBOOK  AS t ON r.DIM_TEXTBOOK_ID = t.DIM_TEXTBOOK_ID
     LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_DISCIPLINE  AS d ON t.DIM_DISCIPLINE_ID = d.DIM_DISCIPLINE_ID
     INNER JOIN ${dim_time_zcm.SQL_TABLE_NAME} AS time ON r.DIM_TIME_ID = time.DIM_TIME_ID
-    WHERE ((UPPER(s.COUNTRY_NAME ) = UPPER('United States')))
-      AND (time.ay_value >= -{% parameter date_range_ay %} )
-      AND ((UPPER(s.TYPE ) IN('UNIVERSITY', 'COMMUNITY COLLEGE')))
-      AND ((UPPER(t.PUBLISHER_NAME ) IN('CENGAGE LEARNING', 'OPEN EDUCATIONAL RESOURCES', 'OPENSTAX')))
-      AND ((UPPER(d.SUB_DISCIPLINE_NAME ) IN ('LIBERAL ARTS MATHEMATICS', 'COLLEGE ALGEBRA', 'INTRODUCTORY STATISTICS')))
-    ;;
+    INNER JOIN ${_zcm_topic_filter.SQL_TABLE_NAME} as topic on r.fact_registration_id = topic.fact_registration_id
+        WHERE ((UPPER(s.COUNTRY_NAME ) = UPPER('United States')))
+        AND (time.ay_value >= -{% parameter _zcm_targeted_registrations.date_range_ay %} )
+        AND ((UPPER(s.TYPE ) IN('UNIVERSITY', 'COMMUNITY COLLEGE')))
+        AND ((UPPER(t.PUBLISHER_NAME ) IN('CENGAGE LEARNING', 'OPEN EDUCATIONAL RESOURCES', 'OPENSTAX')))
+        AND ((UPPER(d.SUB_DISCIPLINE_NAME ) IN ('LIBERAL ARTS MATHEMATICS', 'COLLEGE ALGEBRA', 'INTRODUCTORY STATISTICS')))
+ ;;
   }
 
 
+
+#### Testing if sum_distinct with a key treats table like a window function---- DELETE
+
+measure: topic_test {
+  type: count_distinct
+  sql: ${TABLE}.topic ;;
+  sql_distinct_key: ${fk2_ay_key}  ;;
+}
 
 ###############################################
 ######## KEYS AND IDENTIFIERS (HIDDEN) ########
 ###############################################
 
-
-
-dimension: pk {
-  hidden: no
+dimension: pk1_fact_registration_id {
   primary_key: yes
-  sql: nullif(hash(${dim_school_id},'|',${special_ay_year},'|',${dim_discipline_id}),0) ;;
+  hidden: yes
+  sql: ${TABLE}.fact_registration_id ;;
 }
 
-  dimension: dim_school_id {hidden: yes}
-  dimension: ay_value {hidden: yes}
+dimension: fk2_ay_key {
+  description: "Key for institution/academic year level"
+  hidden: yes
+  primary_key: no
+  sql: nullif(hash(${dim_school_id},'|',${special_ay_year}),0) ;;
+}
+
+dimension: fk3_topic_key {
+  description: "Key for Institution/academic year/course sub-discipline level"
+  hidden: yes
+  primary_key: no
+  sql: nullif(hash(${dim_school_id},'|',${special_ay_year},'|',${topic}),0) ;;
+}
+
+dimension: fk4_section_key {
+  description: "Key for Institution/academic year/course sub-discipline level"
+  hidden: yes
+  primary_key: no
+  sql: nullif(hash(${dim_school_id},'|',${special_ay_year},'|',${topic},'|',${dim_section_id}),0) ;;
+}
+
+dimension: dim_section_id {hidden: yes}
+dimension: course_instructor_id { hidden: yes}
+dimension: dim_school_id {hidden: yes}
+
+
+
   dimension: dim_discipline_id  { hidden: yes}
 
   dimension: ay_start_year {
@@ -73,16 +116,13 @@ dimension: pk {
     sql: right(${special_ay_year},4) ;;
   }
 
+
+
 ###############################################
 ########## FIELDS IN VIEW IN EXPLORE ##########
 ###############################################
 
-  parameter: date_range_ay {
-    label: "Select Targeted Academic Years"
-    description: "Select how many Academic Years back you want included in the query (Not including the current academic year). Ex: selecting '3' would include the current ongoing academic year plus the prior 3"
-    default_value: "3"
-    view_label: "           Parameters & Filters"
-  }
+
 
   parameter: accgr_threshold {
     label: "Set the ACCGR Threshold"
@@ -105,9 +145,33 @@ dimension: pk {
 
 
 
-dimension: school_id {label: "         School ID" }
-dimension: special_ay_year {label: "        Academic Year"}
-dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
+dimension: school_id {
+  label: "         School ID"
+  group_label: "        Core Gateway Dimensions"
+  }
+
+dimension: special_ay_year {
+  label: "        Academic Year"
+  group_label: "        Core Gateway Dimensions"
+  }
+
+dimension: ay_value {
+    type: number
+    hidden: no
+    group_label: "        Core Gateway Dimensions"
+  }
+
+dimension: sub_discipline_name {
+  label: "       Sub-Discipline Name"
+  group_label: "        Core Gateway Dimensions"
+  hidden: no
+  }
+
+dimension: topic {
+  label: "       Course Topic"
+  description: "Similar to Sub-Discipline, but extracts and groups courses using Algebra and Trig products out of Dev Math and into their own topic category"
+  group_label: "        Core Gateway Dimensions"
+  }
 
 
 ###############################################
@@ -117,90 +181,105 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 
 ############## LIFETIME AGGREGATES ##################
 
-  dimension: lifetime_course_count {
+  dimension: school_courses {
     type: number
-    label: "   Lifetime Courses"
+    label: "            C. Gateway Courses" #12
     description: "Rolled up measures aggregated at the institution level for the 3 Core Gateway (CG) Courses for TARGETED Academic Years (can be set with the 'Select Targeted Academic Years' parameter. default = 3)"
-    group_label: "    Lifetime Aggregations"
+    group_label: "    Course Aggregations"
+    hidden: no
   }
-  dimension: lifetime_section_count {
+
+  dimension: school_sections {
     type: number
-    label: "   Lifetime Sections"
+    label: "         C. Gateway Sections" #9
     description: "Rolled up measures aggregated at the institution level for the 3 Core Gateway (CG) Courses for TARGETED Academic Years (can be set with the 'Select Targeted Academic Years' parameter. default = 3)"
-    group_label: "    Lifetime Aggregations"
+    group_label: "    Course Aggregations"
+    hidden: no
+    sql: zeroifnull(${TABLE}.school_sections) ;;
   }
-  dimension: lifetime_topic_count {
+
+  dimension: school_topics {
     type: number
-    label: "  Lifetime Topics Taught"
+    label: "      C. Gateway Topics"  #6
     description: "Rolled up measures aggregated at the institution level for the 3 Core Gateway (CG) Courses for TARGETED Academic Years (can be set with the 'Select Targeted Academic Years' parameter. default = 3)"
-    group_label: "    Lifetime Aggregations"
+    group_label: "   Topic Aggregations"
+    hidden: no
   }
+
   dimension: lifetime_cg_reg {
     type: number
-    label: "Lifetime Registrations"
+    label: "    C. Gateway Registrations" #4
     description: "Rolled up measures aggregated at the institution level for the 3 Core Gateway (CG) Courses for TARGETED Academic Years (can be set with the 'Select Targeted Academic Years' parameter. default = 3)"
-    group_label: "    Lifetime Aggregations"
+    group_label: "  Registration Aggregations"
+    hidden: no
   }
 
 
 
 
-  measure: avg_lifetime_course_count {
+  measure: avg_school_courses {
     type: average
-    label: "    Average Lifetime Courses"
+    label: "    Average C. Gateway Courses"
     group_label: "    Lifetime Averages"
-    sql: ${lifetime_course_count} ;;
+    sql: ${school_courses} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
-  measure: avg_lifetime_section_count {
+
+  measure: avg_school_sections {
     type: average
-    label: "   Average Lifetime Sections"
+    label: "   Average C. Gateway Sections"
     group_label: "    Lifetime Averages"
-    sql: ${lifetime_section_count} ;;
+    sql: ${school_sections} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
-  measure: avg_lifetime_topic_count {
+
+  measure: avg_school_topics {
     type: average
-    label: "  Average Lifetime Topics Taught"
+    label: "  Average C. Gateway Topics Taught"
     group_label: "    Lifetime Averages"
-    sql: ${lifetime_topic_count} ;;
+    sql: ${school_topics} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
+
   measure: avg_lifetime_cg_reg {
     type: average
-    label: " Average Lifetime Registrations"
+    label: " Average C. Gateway Registrations"
     group_label: "    Lifetime Averages"
     sql: ${lifetime_cg_reg} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
 
 
 ############## ANNUAL AGGREGATES ####################
 
-  dimension: annual_course_count {
+  dimension: annual_school_courses {
     type: number
-    label: "    Annual Courses"
+    label: "           C. Gateway An Courses" #11
     description: "Measures aggregated at the institution level and broken out by academic year for the 3 Core Gateway (CG) Courses and the Targeted Academic Years"
-    group_label: "  Annual Aggregations"
+    group_label: "    Course Aggregations"
   }
-  dimension: annual_section_count {
+  dimension: annual_school_sections {
     type: number
-    label: "   Annual Sections"
+    label: "        C. Gateway An Sections" #8
     description: "Measures aggregated at the institution level and broken out by academic year for the 3 Core Gateway (CG) Courses and the Targeted Academic Years"
-    group_label: "  Annual Aggregations"
+    group_label: "    Course Aggregations"
   }
-  dimension: annual_topic_count {
+  dimension: annual_school_topics {
     type: number
-    label: "  Annual Topics Taught"
+    label: "     C. Gateway An Topics" #5
     description: "Measures aggregated at the institution level and broken out by academic year for the 3 Core Gateway (CG) Courses and the Targeted Academic Years"
-    group_label: "  Annual Aggregations"
+    group_label: "   Topic Aggregations"
     drill_fields: [topic_drill*]
   }
   dimension: annual_cg_reg  {
     type: number
-    label: " Annual Registrations"
+    label: "   C. Gateway An Registrations" #3
     description: "Measures aggregated at the institution level and broken out by academic year for the 3 Core Gateway (CG) Courses and the Targeted Academic Years"
-    group_label: "  Annual Aggregations"
+    group_label: "  Registration Aggregations"
     sql: zeroifnull(${TABLE}.annual_cg_reg) ;;
     }
 
@@ -208,55 +287,62 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 
 
 
-  measure: avg_annual_course_count {
+  measure: avg_annual_school_courses {
     type: average
     label: "    Average Annual Courses"
     group_label: "   Annual Averages"
-    sql: ${annual_course_count} ;;
+    sql: ${annual_school_courses} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
-  measure: avg_annual_section_count {
+
+  measure: avg_annual_school_sections {
     type: average
     label: "   Average Annual Sections"
     group_label: "   Annual Averages"
-    sql: ${annual_section_count} ;;
+    sql: ${annual_school_sections} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
-  measure: avg_annual_topic_count {
+
+  measure: avg_annual_school_topics {
     type: average
     label: "  Average Annual Topics Taught"
     group_label: "   Annual Averages"
-    sql: ${annual_topic_count} ;;
+    sql: ${annual_school_topics} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
+
   measure: avg_annual_cg_reg {
     type: average
     label: " Average Annual Registrations"
     group_label: "   Annual Averages"
     sql: ${annual_cg_reg} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
 
 
 ############# ANNUAL TOPIC AGGREGATES ##############
 
-  dimension: annual_topic_course_count {
+  dimension: annual_school_topic_courses {
     type: number
     description: "Measures aggregated at the institution level and broken out by course topic and academic year for the 3 Core Gateway (CG) Courses and the Targeted Academic Years"
-    label: "   Annual Topic Courses"
-    group_label: " Annual Topic Aggregations"
+    label: "          C. Gateway An Tp Courses" #10
+    group_label: "    Course Aggregations"
   }
-  dimension: annual_topic_section_count {
+  dimension: annual_school_topic_sections {
     type: number
     description: "Measures aggregated at the institution level and broken out by course topic and academic year for the 3 Core Gateway (CG) Courses and the Targeted Academic Years"
-    label: "  Annual Topic Sections"
-    group_label: " Annual Topic Aggregations"
+    label: "       C. Gateway An Tp Sections" #7
+    group_label: "    Course Aggregations"
   }
   dimension: annual_topic_cg_reg  {
     type: number
-    label: " Annual Topic Registrations"
+    label: "  C. Gateway An Tp Registrations" #2
     description: "Measures aggregated at the institution level and broken out by course topic and academic year for the 3 Core Gateway (CG) Courses and the Targeted Academic Years"
-    group_label: " Annual Topic Aggregations"
+    group_label: "  Registration Aggregations"
   }
 
 
@@ -264,26 +350,31 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 
 
 
-  measure: avg_annual_topic_course_count {
+  measure: avg_annual_school_topic_courses {
     type: average
     label: "   Average Annual Courses by Topic"
     group_label: " Annual Topic Averages"
-    sql: ${annual_topic_course_count} ;;
+    sql: ${annual_school_topic_courses} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
-  measure: avg_annual_topic_section_count {
+
+  measure: avg_annual_school_topic_sections {
     type: average
     label: "  Average Annual Topic Sections"
     group_label: " Annual Topic Averages"
-    sql: ${annual_topic_section_count} ;;
+    sql: ${annual_school_topic_sections} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
+
   measure: avg_annual_topic_cg_reg {
     type: average
     label: " Average Annual Topic Registrations"
     group_label: " Annual Topic Averages"
     sql: ${annual_topic_cg_reg} ;;
     value_format_name: decimal_1
+    hidden: yes
   }
 
 
@@ -292,31 +383,49 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 ############################################################################
 
   measure: core_gateway_registrations {
-    label: "# Registrations"
+    label: "# Core Gateway Registrations"
     type: sum_distinct
     sql: ${TABLE}.annual_topic_cg_reg ;;
-    sql_distinct_key: ${pk} ;;
+    sql_distinct_key: ${fk3_topic_key} ;;
   }
 
+
   measure: core_gateway_courses {
-    label: "# Courses"
-    type: sum_distinct
-    sql: ${TABLE}.annual_topic_course_count ;;
-    sql_distinct_key: ${pk} ;;
+    label: "# Core Gateway Courses"
+    type: count_distinct
+    sql: ${TABLE}.course_id ;;
   }
 
   measure: core_gateway_sections {
-    label: "# Sections"
-    type: sum_distinct
-    sql: ${TABLE}.annual_topic_section_count ;;
-    sql_distinct_key: ${pk} ;;
-    drill_fields: [dim_section.dim_section_id]
+    label: "# Core Gateway Sections"
+    type: count_distinct
+    sql: ${TABLE}.dim_section_id;;
+    drill_fields: [dim_section_id]
 #   drill_fields: [section_drill*]
   }
 
+
+
+measure: core_gateway_topics {
+  label: "# Core Gateway Topics"
+  type: count_distinct
+  sql: ${TABLE}.topic ;;
+  drill_fields: [topic]
+}
+
+
+  measure: core_gateway_course_instructors {
+    label: "# Core Gateway Crs Instructors"
+    type: count_distinct
+    sql: ${TABLE}.annual_school_topic_sections ;;
+    drill_fields: [course_instructor_id]
+    }
+
+
+
   measure: num_ay_over_threshold_s       {
     type: number
-    label: "# AYs Over Threshold"
+    label: "# AYs Over CG Threshold"
     #     view_label: " School & Academic Year Aggregations"
     group_label: "Core Gateway Courses"
     description: "School/AY Level. Number of AY's (2015-present) where registrations for Core Gateway Courses were greater than the Annual Combined Enrollment threshold (default = 1,000 registrations)"
@@ -325,7 +434,7 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 
   measure: most_recent_ay_over_threshold {
     type: string
-    label: "Recent AY Over Threshold"
+    label: "Recent AY Over CG Threshold"
     #     view_label: " School & Academic Year Aggregations"
     group_label: "Core Gateway Courses"
     description: "School/AY Level. Most recent AY where combined annual registrations for core gateway courses were greater than threshold (default = 1,000)"
@@ -335,7 +444,7 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 
   measure: most_recent_ay_over_threshold_value {
     type: number
-    label: "Recent AY Over Threshold (Value)"
+    label: "Recent AY Over CG Threshold (Value)"
     #     view_label: " School & Academic Year Aggregations"
     group_label: "Core Gateway Courses"
     description: "School/AY Level. Most recent AY where combined annual registrations for core gateway courses were greater than threshold (default = 1,000)"
@@ -345,7 +454,7 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 
   measure: first_ay_over_threshold       {
     type: string
-    label: "First AY Over Threshold"
+    label: "First AY Over CG Threshold"
     #     view_label: " School & Academic Year Aggregations"
     group_label: "Core Gateway Courses"
     description: "School/AY Level. First AY where combined annual registrations for core gateway courses were greater than threshold (default = 1,000)"
@@ -355,7 +464,7 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
 
   measure: first_ay_over_threshold_value       {
     type: number
-    label: "First AY Over Threshold (Value)"
+    label: "First AY Over CG Threshold (Value)"
     #     view_label: " School & Academic Year Aggregations"
     group_label: "Core Gateway Courses"
     description: "School/AY Level. First AY where combined annual registrations for core gateway courses were greater than threshold (default = 1,000)"
@@ -368,7 +477,7 @@ dimension: sub_discipline_name {label: "       Sub-Discipline Name"}
     type: sum_distinct
     #     view_label: " School & Academic Year Aggregations"
     group_label: "Core Gateway Courses"
-    sql_distinct_key: ${pk} ;;
+    sql_distinct_key: ${fk3_topic_key} ;;
     sql: ${annual_cg_reg} ;;
   }
 
@@ -390,6 +499,10 @@ measure: num_schools {
 
 measure: cg_pk_count {
   type: count
+  filters:{
+    field: pk1_fact_registration_id
+    value: "NOT NULL"
+  }
 }
 
 

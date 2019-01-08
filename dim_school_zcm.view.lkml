@@ -11,7 +11,7 @@ view: dim_school_zcm {
   set: redesign_detail {
     fields: [
       name
-      , zcm_school_redesign_registration.lifetime_redesign_reg
+      , zcm_school_redesign_registration.school_registrations
       , _zcm_cg_registrations.num_ay_over_threshold_s
       , _zcm_cg_registrations.most_recent_ay_over_threshold
       , _zcm_cg_registrations.total_combined_cgr

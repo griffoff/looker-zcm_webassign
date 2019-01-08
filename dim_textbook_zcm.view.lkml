@@ -4,7 +4,7 @@ include: "/webassign/dim_textbook.view.lkml"
 view: dim_textbook_zcm {
   extends: [dim_textbook]
   derived_table: {
-    sql: select * from WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_TEXTBOOK ;;
+    sql: SELECT *  FROM WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_TEXTBOOK  ;;
   }
 
 
@@ -50,7 +50,7 @@ view: dim_textbook_zcm {
               ;;
   }
 
-  filter: publisher_group_filter {
+  filter: publisher_group_filter {   #### Note, Cant use a peramater for this as parameters only allow you to select one item
     type: string
     view_label: "           Parameters & Filters"
     default_value: "Internal, OER"
