@@ -31,6 +31,7 @@ SELECT
             , sec.course_instructor_id as course_instructor_id
             , sec.dim_section_id as dim_section_id
             , sec.section_instructor_id as section_instructor_id
+            , r.registrations as registrations
             , COALESCE(sum(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as school_registrations
             , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_redesign_reg
             , COALESCE(sum(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, topic.topic),0) as annual_school_topic_registrations
@@ -352,10 +353,9 @@ measure: count {
   }
 
   measure: lifetime_registrations {
-    type: sum_distinct
+    type: sum
     label: "# Lifetime Registrations"
-    sql: ${TABLE}.annual_school_topic_registrations ;;
-    sql_distinct_key: ${fk3_topic_key} ;;
+    sql: ${TABLE}.registrations ;;
   }
 
 #   measure: average_lifetime_registrations {
@@ -364,7 +364,7 @@ measure: count {
 #     sql: ${TABLE}.annual_school_topic_registrations ;;
 # #    sql_distinct_key: ${fk3_topic_key} ;;
 #     value_format_name: decimal_1
-#   }
+#  }
 
 
 ############################################################################

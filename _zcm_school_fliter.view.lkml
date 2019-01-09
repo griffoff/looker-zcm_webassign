@@ -19,7 +19,7 @@ view: _zcm_school_filter {
 }
 
 dimension: dim_school_id {
-  hidden: no
+  hidden: yes
 }
 
 parameter: core_gateway_threshold_range {

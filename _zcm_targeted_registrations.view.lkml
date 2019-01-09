@@ -25,6 +25,7 @@ view: _zcm_targeted_registrations {
                 , sec.course_instructor_id as course_instructor_id
                 , sec.dim_section_id as dim_section_id
                 , sec.section_instructor_id as section_instructor_id
+                , r.registrations as registrations
                 , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id),0) as school_registrations
                 , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_redesign_reg
                 , COALESCE(SUM(r.REGISTRATIONS) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, topic.topic),0) as annual_school_topic_registrations
@@ -36,6 +37,13 @@ view: _zcm_targeted_registrations {
                 , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, topic.topic),0) as annual_school_topic_sections
                 , COALESCE(COUNT(DISTINCT topic.topic) OVER (PARTITION BY s.dim_school_id),0) as school_topics
                 , COALESCE(COUNT(DISTINCT topic.topic) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_school_topics
+                , COALESCE(SUM(r.REGISTRATIONS),0) AS tar_registrations_sum
+                , COUNT(DISTINCT time.special_ay_year) as num_tar_ays
+                , COUNT(DISTINCT topic.topic) as num_tar_topics
+                , COUNT(DISTINCT sec.course_id) as num_tar_courses
+                , COUNT(DISTINCT sec.course_instructor_id) as num_tar_crs_instructors
+                , COUNT(DISTINCT sec.dim_section_id) as num_tar_sections
+                , COUNT(DISTINCT sec.section_instructor_id) as num_tar_sect_instructors
       FROM WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.FACT_REGISTRATION  AS r
           LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_SCHOOL  AS s ON r.DIM_SCHOOL_ID = s.DIM_SCHOOL_ID
           LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_SECTION AS sec on r.DIM_SECTION_ID = sec.DIM_SECTION_ID
@@ -49,8 +57,10 @@ view: _zcm_targeted_registrations {
             AND ((UPPER(d.SUB_DISCIPLINE_NAME ) IN('LIBERAL ARTS MATHEMATICS', 'COLLEGE ALGEBRA', 'INTRODUCTORY STATISTICS', 'PRECALCULUS', 'FINITE MATH AND APPLIED CALCULUS'))
             OR ((UPPER(t.name) LIKE '%ALG%' OR UPPER(t.name) like '%TRIG%') AND UPPER(t.name) NOT LIKE '%ADVANCED%' AND UPPER(t.name) NOT LIKE '%LINEAR%'))
             AND (time.ay_value >= -{% parameter _zcm_targeted_registrations.date_range_ay %})
+          GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13
                 ;;
     }
+
 
 
 ###############################################
@@ -323,65 +333,68 @@ view: _zcm_targeted_registrations {
     }
 
 
-############################ DOUBLE CHECK THESE MEASURES TO SEE IF THEY MAKE SENSE OR WORK CORRECTLY ##############################
 
-    measure: school_count {
-      label: "# Distinct Schools"
-      type: count_distinct
-      sql: ${dim_school_id} ;;
-      hidden: yes
-    }
 
-    measure: targeted_registrations {
-      label: "# Targeted Registrations"
-      type: sum_distinct
-      sql: ${TABLE}.annual_school_topic_registrations ;;
-      sql_distinct_key: ${fk3_topic_key} ;;                       #### CHECK THIS
-      hidden: no
-    }
 
-  measure: targeted_courses {
+
+
+
+
+  dimension:tar_registrations_sum {
+    type: number
+    sql: zeroifnull(${TABLE}.tar_registrations_sum) ;;
+  }
+
+
+
+
+
+#############################################################################################################################################
+########################                           Count Sums                                      ##########################################
+#############################################################################################################################################
+
+
+  measure: num_tar_ays  {
+    label: "# Targeted Academic Yrs."
+    type: sum
+    sql: ${TABLE}.num_tar_ays ;;
+  }
+
+  measure: num_tar_topics  {
+    label: "# Targeted Topics  Taught"
+    type: sum
+    sql: ${TABLE}.num_tar_topics ;;
+  }
+
+  measure: num_tar_courses  {
     label: "# Targeted Courses"
-    type: count_distinct
-    sql: ${TABLE}.course_id ;;
+    type: sum
+    sql: ${TABLE}.num_tar_courses ;;
   }
 
-  measure: targeted_sections {
+  measure: num_tar_crs_instructors  {
+    label: "# Targeted Course Instructors"
+    type: sum
+    sql: ${TABLE}.num_tar_crs_instructors ;;
+  }
+
+  measure: num_tar_sections  {
     label: "# Targeted Sections"
-    type: count_distinct
-    sql: ${TABLE}.dim_section_id;;
-    drill_fields: [dim_section_id]
-#   drill_fields: [section_drill*]
+    type: sum
+    sql: ${TABLE}.num_tar_sections ;;
   }
 
-
-
-  measure: targeted_topics {
-    label: "# Targeted Topics"
-    type: count_distinct
-    sql: ${TABLE}.topic ;;
-    drill_fields: [topic]
+  measure: num_tar_sect_instructors  {
+    label: "# Targeted Section Instructors"
+    type: sum
+    sql: ${TABLE}.num_tar_sect_instructors ;;
   }
 
-
-  measure: targeted_course_instructors {
-    label: "# Targeted Crs Instructors"
-    type: count_distinct
-    sql: ${TABLE}.annual_school_topic_sections ;;
-    drill_fields: [course_instructor_id]
+  measure: num_tar_registrations {
+    type: sum
+    label: "# Targeted Registrations"
+    sql: ${TABLE}.registrations ;;
   }
-
-
-
-measure: targeted_pk_count {
-  type: count
-  filters:{
-    field: pk1_fact_registration_id
-    value: "NOT NULL"
-  }
-  hidden: yes
-}
-
 
 ############################################################################
 ########################### HIDDEN FIELDS ##################################

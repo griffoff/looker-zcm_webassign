@@ -40,6 +40,14 @@ SELECT
             , COALESCE(COUNT(DISTINCT sec.dim_section_id) OVER (PARTITION BY s.dim_school_id, time.special_ay_year, topic.topic),0) as annual_school_topic_sections
             , COALESCE(COUNT(DISTINCT topic.topic) OVER (PARTITION BY s.dim_school_id),0) as school_topics
             , COALESCE(COUNT(DISTINCT topic.topic) OVER (PARTITION BY s.dim_school_id, time.special_ay_year),0) as annual_school_topics
+            , COALESCE(COUNT(DISTINCT sec.course_instructor_id) OVER (PARTITION BY s.dim_school_id),0) AS course_instructors
+            , COALESCE(SUM(r.REGISTRATIONS),0) AS cg_registrations_sum
+--            , COUNT(DISTINCT time.special_ay_year) as num_cg_ays
+--            , COUNT(DISTINCT topic.topic) as num_cg_topics
+--            , COUNT(DISTINCT sec.course_id) as num_cg_courses
+--            , COUNT(DISTINCT sec.course_instructor_id) as num_cg_crs_instructors
+--            , COUNT(DISTINCT sec.dim_section_id) as num_cg_sections
+--            , COUNT(DISTINCT sec.section_instructor_id) as num_cg_sect_instructors
     FROM WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.FACT_REGISTRATION  AS r
     LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_SCHOOL  AS s ON r.DIM_SCHOOL_ID = s.DIM_SCHOOL_ID
     LEFT JOIN WEBASSIGN.FT_OLAP_REGISTRATION_REPORTS.DIM_SECTION AS sec on r.DIM_SECTION_ID = sec.DIM_SECTION_ID
@@ -52,18 +60,11 @@ SELECT
         AND ((UPPER(s.TYPE ) IN('UNIVERSITY', 'COMMUNITY COLLEGE')))
         AND ((UPPER(t.PUBLISHER_NAME ) IN('CENGAGE LEARNING', 'OPEN EDUCATIONAL RESOURCES', 'OPENSTAX')))
         AND ((UPPER(d.SUB_DISCIPLINE_NAME ) IN ('LIBERAL ARTS MATHEMATICS', 'COLLEGE ALGEBRA', 'INTRODUCTORY STATISTICS')))
+    GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13
  ;;
   }
 
 
-
-#### Testing if sum_distinct with a key treats table like a window function---- DELETE
-
-measure: topic_test {
-  type: count_distinct
-  sql: ${TABLE}.topic ;;
-  sql_distinct_key: ${fk2_ay_key}  ;;
-}
 
 ###############################################
 ######## KEYS AND IDENTIFIERS (HIDDEN) ########
@@ -215,8 +216,6 @@ dimension: topic {
   }
 
 
-
-
   measure: avg_school_courses {
     type: average
     label: "    Average C. Gateway Courses"
@@ -284,9 +283,6 @@ dimension: topic {
     }
 
 
-
-
-
   measure: avg_annual_school_courses {
     type: average
     label: "    Average Annual Courses"
@@ -346,10 +342,6 @@ dimension: topic {
   }
 
 
-
-
-
-
   measure: avg_annual_school_topic_courses {
     type: average
     label: "   Average Annual Courses by Topic"
@@ -381,45 +373,6 @@ dimension: topic {
 ############################################################################
 ########################## OTHER FIELDS ####################################
 ############################################################################
-
-  measure: core_gateway_registrations {
-    label: "# Core Gateway Registrations"
-    type: sum_distinct
-    sql: ${TABLE}.annual_topic_cg_reg ;;
-    sql_distinct_key: ${fk3_topic_key} ;;
-  }
-
-
-  measure: core_gateway_courses {
-    label: "# Core Gateway Courses"
-    type: count_distinct
-    sql: ${TABLE}.course_id ;;
-  }
-
-  measure: core_gateway_sections {
-    label: "# Core Gateway Sections"
-    type: count_distinct
-    sql: ${TABLE}.dim_section_id;;
-    drill_fields: [dim_section_id]
-#   drill_fields: [section_drill*]
-  }
-
-
-
-measure: core_gateway_topics {
-  label: "# Core Gateway Topics"
-  type: count_distinct
-  sql: ${TABLE}.topic ;;
-  drill_fields: [topic]
-}
-
-
-  measure: core_gateway_course_instructors {
-    label: "# Core Gateway Crs Instructors"
-    type: count_distinct
-    sql: ${TABLE}.annual_school_topic_sections ;;
-    drill_fields: [course_instructor_id]
-    }
 
 
 
@@ -481,6 +434,65 @@ measure: core_gateway_topics {
     sql: ${annual_cg_reg} ;;
   }
 
+
+
+
+#############################################################################################################################################
+########################                           Counts & Sums                                   ##########################################
+#############################################################################################################################################
+
+
+
+  measure: num_cg_ays  {
+    #     group_label: "Count Sums"
+    label: "# CG Academic Yrs."
+    type: count_distinct
+    sql: ${TABLE}.special_ay_year ;;
+  }
+
+  measure: num_cg_topics  {
+    #     group_label: "Count Sums"
+    label: "# CG Topics  Taught"
+    type: count_distinct
+    sql: ${TABLE}.topic ;;
+  }
+
+  measure: num_cg_courses  {
+    #     group_label: "Count Sums"
+    label: "# CG Courses"
+    type: count_distinct
+    sql: ${TABLE}.course_id ;;
+  }
+
+  measure: num_cg_crs_instructors  {
+    #     group_label: "Count Sums"
+    label: "# CG Course Instructors"
+    type: count_distinct
+    sql: ${TABLE}.course_instructor_id ;;
+  }
+
+  measure: num_cg_sections  {
+    #     group_label: "Count Sums"
+    label: "# CG Sections"
+    type: count_distinct
+    sql: ${TABLE}.dim_section_id ;;
+  }
+
+  measure: num_cg_sect_instructors  {
+    #     group_label: "Count Sums"
+    label: "# CG Section Instructors"
+    type: count_distinct
+    sql: ${TABLE}.section_instructor_id ;;
+  }
+
+  measure: num_cg_registrations {
+    type: sum
+    label: "# CG Registrations"
+    sql: ${TABLE}.registrations ;;
+  }
+
+
+
 #############################################################################################################################################
 ########################                           OTHER AGGREGATES                                ##########################################
 #############################################################################################################################################
@@ -488,22 +500,6 @@ measure: core_gateway_topics {
 
 
 
-
-
-
-
-measure: num_schools {
-  type: count_distinct
-  sql: ${dim_school_id} ;;
-}
-
-measure: cg_pk_count {
-  type: count
-  filters:{
-    field: pk1_fact_registration_id
-    value: "NOT NULL"
-  }
-}
 
 
   set: topic_drill {
