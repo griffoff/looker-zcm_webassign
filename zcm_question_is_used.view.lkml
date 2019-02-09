@@ -1,6 +1,6 @@
 # If necessary, uncomment the line below to include explore_source.
-include: "/webassign/dim_deployment.view.lkml"
- include: "/webassign/webassign.model.lkml"
+include: "//webassign/dim_deployment.view.lkml"
+ include: "//webassign/webassign.model.lkml"
 view: zcm_question_is_used {
   view_label: " Chip's Additions"
   derived_table: {

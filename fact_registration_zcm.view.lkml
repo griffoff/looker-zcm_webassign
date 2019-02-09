@@ -1,4 +1,4 @@
-include: "/webassign/fact_registration.view.lkml"
+include: "//webassign/fact_registration.view.lkml"
 
 
 view: fact_registration_zcm {
@@ -6,6 +6,9 @@ view: fact_registration_zcm {
 
 
 dimension: dim_time_id {}
+dimension: fact_registration_id {
+  hidden: no
+}
 
 
   measure: user_registrations {

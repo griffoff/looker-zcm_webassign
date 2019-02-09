@@ -1,4 +1,4 @@
-include: "/webassign/questions.view.lkml"
+include: "//webassign/questions.view.lkml"
 
 view: questions_zcm {
   extends: [questions]

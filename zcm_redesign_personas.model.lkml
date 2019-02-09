@@ -1,105 +1,231 @@
-include: "/webassign/*.view.lkml"
+include: "//webassign/*.view.lkml"
 include: "*.view.lkml"
 include: "redesign_test.explore.lkml"
 
 
-explore: zcm_coreq_redesign_registrations {
+# explore: zcm_coreq_redesign_base {
+#   extends: [fact_registration]
+#   from: __zcm_lifetime_view
+#   label: "Co-Requisite Activations Base"
+#   case_sensitive: no
+# # extension: required
+
+
+# #  always_join: [_zcm_school_filter, _zcm_topic_filter, _zcm_section_registration_filter, _zcm_instructor_filter]  ### These views act as filters and must always be joined in a query
+#
+# #   always_filter: {
+# #     filters:{
+# #       field: _zcm_topic_filter.publisher_group_filter                                                             ### Only include those using internal & OER publishers for the target topics
+# #       value: "Internal, OER"
+# #       }
+# #   }
+#                                                                                                                   ### Only Include schools that are University & Community Colleges in the US
+# #   sql_always_where: ${dim_school.type} IN ('University', 'Community College')
+# #                      AND ${dim_school.country_name} = 'United States'
+# #                      AND ${_zcm_topic_filter.topic} IS NOT NULL;;
+#
+#
+# ##################################################################
+# ##################### ALTERNATIVE VIEWS ##########################
+# ##################################################################
+#
+# join: __zcm_coregateway_view {
+#   type: left_outer                                                                                                ### Add Core Gateway View which is used by _zcm_school_filter include only the schools that meet
+#   relationship: one_to_one                                                                                        ### Core Gateway Annual Registration threshold. Includes less course topics
+#   view_label: " Core Gateway View"##### Assuming one to one since pks are all unique
+#   sql_on: ${fact_registration.pk1_fact_registration_id} = ${__zcm_coregateway_view.pk1_fact_registration_id} ;;
+# }
+#
+#   join: __zcm_targeted_view {                                                                             ### Add view targeting narrow time period for all potential co-req course topics
+#     type: left_outer
+#     relationship: one_to_one
+#     view_label: "    Targeted View"
+#     sql_on: ${fact_registration.pk1_fact_registration_id} = ${__zcm_targeted_view.pk1_fact_registration_id}   ;;
+#   }
+#
+#
+# ##################################################################
+# ########################### FILTERS ##############################                                                ### All filter tables inner join and are included in the always filter section at the top
+# ##################################################################
+#
+#   join: _zcm_school_filter {                                                                                      ### Only accepts schools that meet the ACCGR Threshold for the targeted years
+#     from: _zcm_school_filter
+#     type: inner
+#     relationship: many_to_one
+#     sql_on: ${fact_registration.dim_school_id} = ${_zcm_school_filter.dim_school_id} ;;
+#   }
+#
+#   join: _zcm_topic_filter {                                                                                       ### Better defines Course topics & groups publishers into "Internal", "OER", and other publishers names
+#     from: _zcm_topic_filter                                                                                       ### Filters for the 5 topics needed and default publisher = Internal & OER
+#     type: inner
+#     relationship: one_to_one
+#     view_label: "Discipline"
+#     fields: [_zcm_topic_filter.topic, _zcm_topic_filter.topic_group, _zcm_topic_filter.publisher_group_filter]
+#     sql_on: ${fact_registration.fact_registration_id} = ${_zcm_topic_filter.fact_registration_id} ;;
+#   }
+#
+#   join: _zcm_section_registration_filter {                                                                        ### Filters out sections that have less than 5 registrations
+#     from: _zcm_section_registration_filter
+#     type: inner
+#     relationship: many_to_one
+#     sql_on: ${fact_registration.dim_section_id} = ${_zcm_section_registration_filter.dim_section_id} ;;
+#   }
+#
+#   join: _zcm_instructor_filter {                                                                                  ### Filters out Course Instructors that have less than 10 registrations annually
+#     from: _zcm_instructor_filter
+#     type:  inner
+#     relationship: many_to_one
+#     sql_on: ${fact_registration.course_instructor_id} = ${_zcm_instructor_filter.course_instructor_id}
+#       AND ${fact_registration.ay_value} = ${_zcm_instructor_filter.ay_value};;
+#   }
+#
+# }
+#
+#
+#
+#
+#
+#
+# explore: zcm_coreq_redesign_registrations {
+#   extends: [zcm_coreq_redesign_base]
+#    from: __zcm_lifetime_view
+#
+#   label: "Co-Requisite Activations"
+#   case_sensitive: no
+#
+#   join: __zcm_lifetime_aggregations {
+#     view_label: "     Lifetime View"
+#     type: left_outer
+#     relationship: one_to_one
+#     sql_on:  ${fact_registration.pk1_fact_registration_id} = ${__zcm_lifetime_aggregations.pk1_fact_registration_id} ;;
+#   }
+#
+# ###################### VIEWS TO BE REMOVED OR REDEFINED ##################################
+#
+#   join: dim_axscode {
+#     fields: []
+#   }
+#   join: dim_payment_method {
+#     fields: []
+#   }
+#   join: dim_faculty {
+#     fields: []
+#   }
+#   join: dim_product_family {
+#     fields:[]
+#   }
+#   join: dim_section {
+#     from: dim_section_zcm
+#   }
+#
+#   join: dim_time {
+#     from: dim_time_zcm
+#     type: inner
+#     relationship: many_to_one
+#     sql_on: ${fact_registration.dim_time_id} = ${dim_time.dim_time_id} ;;
+#     fields: [dim_time.ay_end_year, dim_time.ay_start_year,dim_time.special_ay_year, dim_time.ay_value, dim_time.timedate, dim_time.cdate]
+#   }
+#
+#   join: dim_textbook {
+#     from: dim_textbook_zcm
+#     relationship: many_to_one
+#     type: left_outer
+#     sql_on: ${fact_registration.dim_textbook_id} = ${dim_textbook.dim_textbook_id} ;;
+#   }
+#
+#   join: dim_school {
+#     from: dim_school_zcm
+#   }
+#
+#   join:   _redesign_multiview_fields {
+#     from: _redesign_multiview_fields
+#     relationship: one_to_one
+#     sql:   ;;
+# #  fields: [_redesign_multiview_fields.date_range_ay, _redesign_multiview_fields.accgr_threshold, _redesign_multiview_fields.lifetime_ay_included_db_title, _redesign_multiview_fields.targeted_ay_included_db_title]
+#   }
+#
+#
+# #------- SPECIAL DEFINITIONS FOR EXISTING WEBASSIGN VIEWS --------#
+#
+#   join: _zcm_consec_ay {
+#     view_label: "Lifetime Consecutive AYs w/ Registrations"
+#     type: left_outer
+#     relationship: many_to_one
+#     sql_on: ${fact_registration.dim_school_id} = ${_zcm_consec_ay.dim_school_id} ;;
+#   }
+#
+#}
+
+explore: test {
   extends: [fact_registration]
-  from: fact_registration_zcm
-  label: "Co-Requisite Activations"
+  from: __zcm_lifetime_view
+  label: "Test"
   case_sensitive: no
-  always_join: [_zcm_school_filter, _zcm_topic_filter, dim_textbook]                                          ##### Only include schools meeting the CGR Threshold, From the US, University/CC type, internal & OER publishers, and for the target topics
-  sql_always_where: {% condition dim_textbook.publisher_group_filter %}
-                        ${dim_textbook.publisher_group_three} {% endcondition %}
-                    AND ${dim_school.type} IN ('University', 'Community College')
-                    AND ${dim_school.country_name} = 'United States'
-                     AND ${_zcm_topic_filter.topic} IS NOT NULL
- --                    AND ${_zcm_cg_registrations.pk1_fact_registration_id} IS NOT NULL                      #### Not null on these causes measures to only work at the cg level, but without, dimensions have null values and create multiple  rows
---                     AND ${_zcm_targeted_registrations.pk1_fact_registration_id} IS NOT NULL
-                    ;;
 
+##################################################################
+##################### ALTERNATIVE VIEWS ##########################
+##################################################################
 
-#------- PDTs AGGREGATING AT DIFFERENT LEVELS -------#
-
-  join: _zcm_lifetime_registrations {                                                                              ##### Pulls in broadest chunk of data related to the project. Goes back as far as we have data for.
-#    from: _zcm_lifetime_registrations                                                                              ##### Can be narrowed with the "Select Lifetime Academic Years Included" parameter
-    type: inner                                                                                                     ##### Inner join to restrict data and broadly include ALL topics, school types, country, etc related to project.
-    relationship: one_to_one
-    view_label: "   Lifetime Registrations"
-    sql_on: ${fact_registration.fact_registration_id} = ${_zcm_lifetime_registrations.pk1_fact_registration_id} ;;
-#      sql_on:     ${fact_registration.dim_school_id} = ${_zcm_lifetime_registrations.dim_school_id}
-#              AND ${dim_time.special_ay_year} = ${_zcm_lifetime_registrations.special_ay_year}
-#              AND ${dim_discipline.dim_discipline_id} = ${_zcm_lifetime_registrations.dim_discipline_id};;
-  }
-
-
-
-  join: _zcm_targeted_registrations {                                                                         ##### Added layer of metrics with broad course topics but restricted to the targeted academic years
-    type: left_outer                                                                                          ##### Left Join to all_registrations view to add targeted metrics without further restricting available data
-#  from: _zcm_targeted_registrations
-   relationship: one_to_one
-    view_label: "   Targeted Registrations"##### Assuming one to one since pks are all unique
-    sql_on: ${_zcm_lifetime_registrations.pk1_fact_registration_id}
-              = ${_zcm_targeted_registrations.pk1_fact_registration_id}   ;;
-  }
-
-
-  join: _zcm_cg_registrations {                                                                               ##### Added layer of Core Gateway Registrations.
-#    from: _zcm_cg_registrations
-    type: left_outer                                                                                          ##### Left Join to all_registrations view allows to add CG metrics without further restricting data
-    relationship: one_to_one
-    view_label: "   Core Gateway Registrations"##### Assuming one to one since pks are all unique
-    sql_on: ${_zcm_lifetime_registrations.pk1_fact_registration_id}
-              = ${_zcm_cg_registrations.pk1_fact_registration_id} ;;
-#    sql_on: ${_zcm_lifetime_registrations.pk} = ${_zcm_cg_registrations.pk} ;;
-#     sql_on: ${_zcm_lifetime_registrations.dim_school_id} = ${_zcm_cg_registrations.dim_school_id}                ##### Keeping original join for reference incase pk join causes a problem
-#              AND ${dim_time.special_ay_year} = ${_zcm_cg_registrations.special_ay_year}
-#              AND ${dim_discipline.dim_discipline_id} = ${_zcm_cg_registrations.dim_discipline_id};;
-  }
-
-
-#------  VIEWS FOR FILTERS ------#
-
-  join: _zcm_school_filter {                                                                                  ##### Inner Joins with fact_registration on school ID only. PDT is filtered to only accept schools that meet ACCGR Threshold for the targeted years
-    from: _zcm_school_filter
-    type: inner
-    relationship: many_to_one
-    sql_on: ${fact_registration.dim_school_id} = ${_zcm_school_filter.dim_school_id} ;;
-  }
-
-  join: _zcm_topic_filter {                                                                                   ##### Not sure if this is the most efficient way to do this. Also have topic filtered on all the different level tables above. Might be redundant
-    from: _zcm_topic_filter
+  join: __zcm_targeted_view {                                                                             ### Add view targeting narrow time period for all potential co-req course topics
     type: left_outer
     relationship: one_to_one
-    view_label: "Discipline"
-    fields: [_zcm_topic_filter.topic]
-    sql_on: ${fact_registration.fact_registration_id} = ${_zcm_topic_filter.fact_registration_id} ;;
+    view_label: "    Targeted View"
+    sql_on: ${fact_registration.pk1_fact_registration_id} = ${__zcm_targeted_view.pk1_fact_registration_id}   ;;
   }
 
-  join:   _redesign_multiview_fields {
-    from: _redesign_multiview_fields
-    relationship: one_to_one
-    sql:   ;;
-#  fields: [_redesign_multiview_fields.date_range_ay, _redesign_multiview_fields.accgr_threshold, _redesign_multiview_fields.lifetime_ay_included_db_title, _redesign_multiview_fields.targeted_ay_included_db_title]
-  }
+join: __zcm_coregateway_view {
+  type: left_outer                                                                                                ### Add Core Gateway View which is used by _zcm_school_filter include only the schools that meet
+  relationship: one_to_one                                                                                        ### Core Gateway Annual Registration threshold. Includes less course topics
+  view_label: " Core Gateway View"##### Assuming one to one since pks are all unique
+  sql_on: ${fact_registration.pk1_fact_registration_id} = ${__zcm_coregateway_view.pk1_fact_registration_id} ;;
+}
+
+#################################################################
+##################### INSTRUCTOR RANKINGS #######################
+#################################################################
+
+join: _zcm_targeted_instructor_ranking {
+  type: left_outer
+  relationship: many_to_one
+  view_label: "     Targeted View"
+  sql_on: ${__zcm_targeted_view.dim_school_id}=${_zcm_targeted_instructor_ranking.dim_school_id} AND ${__zcm_targeted_view.course_instructor_id}=${_zcm_targeted_instructor_ranking.course_instructor_id};;
+}
+
+#################################################################
+######################## FILTER TABLES ##########################
+#################################################################
+
+   join: _zcm_topic_filter {                                                                                       ### Better defines Course topics & groups publishers into "Internal", "OER", and other publishers names
+     from: _zcm_topic_filter                                                                                       ### Filters for the 5 topics needed and default publisher = Internal & OER
+     type: inner
+     relationship: one_to_one
+     view_label: "Course Topic"
+     fields: [_zcm_topic_filter.topic, _zcm_topic_filter.topic_group, _zcm_topic_filter.publisher_group_filter]
+     sql_on: ${fact_registration.fact_registration_id} = ${_zcm_topic_filter.fact_registration_id} ;;
+}
 
 
-#------- SPECIAL DEFINITIONS FOR EXISTING WEBASSIGN VIEWS --------#
 
-  join: _zcm_consec_ay {
-    view_label: "Lifetime Consecutive AYs w/ Registrations"
-    type: left_outer
-    relationship: many_to_one
-    sql_on: ${_zcm_lifetime_registrations.dim_school_id} = ${_zcm_consec_ay.dim_school_id} ;;
+#################################################################
+########### VIEWS TO BE REMOVED OR REDEFINED ####################
+#################################################################
+
+  join: dim_axscode {fields: []}
+  join: dim_payment_method {fields: []}
+  join: dim_faculty {fields: []}
+  join: dim_product_family {fields:[]}
+  join: dim_section {from: dim_section_zcm}
+
+  join: dim_discipline {
+    from: dim_discipline_zcm
   }
 
   join: dim_time {
-#    required_joins: [zcm_school_redesign_registration]
     from: dim_time_zcm
     type: inner
     relationship: many_to_one
     sql_on: ${fact_registration.dim_time_id} = ${dim_time.dim_time_id} ;;
-    fields: [dim_time.ay_end_year, dim_time.ay_start_year,dim_time.special_ay_year, dim_time.ay_value]
+    fields: [dim_time.ay_end_year, dim_time.ay_start_year,dim_time.special_ay_year, dim_time.ay_value, dim_time.timedate, dim_time.cdate]
   }
 
   join: dim_textbook {
@@ -112,46 +238,4 @@ explore: zcm_coreq_redesign_registrations {
   join: dim_school {
     from: dim_school_zcm
   }
-
-
-#------------- REMOVED FROM FIELD PICKER --------------------------#
-
-  join: dim_axscode {
-    fields: []
-    }
-  join: dim_payment_method {
-    fields: []
-    }
-  join: dim_faculty {
-    fields: []
-    }
-  join: dim_product_family {
-    fields:[]
-    }
-#  join: dim_section {fields:[]}
-
 }
-
-
-
-
-
-
-
-
-######################################## One Offs ############################################
-
-
-#explore: _redesign_multiview_fields {}
-explore: _zcm_consec_ay {}
-#explore: _zcm_cg_registrations {}
-explore: _zcm_topic_filter {}
-
-
-#   join: _redesign_multiview_fields {
-#     relationship: one_to_one
-#     sql:   ;;
-#   fields: [_redesign_multiview_fields.date_range_ay, _redesign_multiview_fields.accgr_threshold, _redesign_multiview_fields.lifetime_ay_included_db_title, _redesign_multiview_fields.targeted_ay_included_db_title]
-# }
-#}
-explore: _zcm_lifetime_registrations {}

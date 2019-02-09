@@ -1,13 +1,14 @@
 include: "*.view.lkml"
 include: "zcm_redesign_personas.model.lkml"
-include: "/webassign/*.model.lkml"
-include: "_zcm_lifetime_registrations.view.lkml"
-include: "_zcm_targeted_registrations.view.lkml"
-include: "_zcm_cg_registrations.view.lkml"
+include: "//webassign/*.model.lkml"
+include: "__zcm_lifetime_view.view.lkml"
+include: "__zcm_targeted_view.view.lkml"
+include: "__zcm_coregateway_view.view.lkml"
 include: "dim_textbook_zcm.view.lkml"
-include: "_zcm_lifetime_registrations.view.lkml"
+include: "__zcm_lifetime_view.view.lkml"
 include: "zcm_redesign_personas.model.lkml"
-include: "/webassign/dim_textbook.view.lkml"
+include: "//webassign/dim_textbook.view.lkml"
+include: "//webassign/fact_registration.view.lkml"
 
 view: _redesign_multiview_fields {
 
@@ -43,7 +44,7 @@ view: _redesign_multiview_fields {
     view_label: "           Parameters & Filters"
     hidden:  no
     description: "For use in dashboards as a dynamic title tile. Useless in explore. Please hide"
-    sql: min(${_zcm_lifetime_registrations.ay_start_year}) ;;
+    sql: min(${fact_registration.ay_start_year}) ;;
     html: <h2> {{ value }}-Present </h2>;;
   }
 
@@ -53,7 +54,7 @@ view: _redesign_multiview_fields {
     view_label: "           Parameters & Filters"
     hidden:  no
     description: "For use in dashboards as a dynamic title tile. Useless in explore. Please hide"
-    sql: min(${_zcm_cg_registrations.ay_start_year}) ;;
+    sql: min(${__zcm_coregateway_view.ay_start_year}) ;;
     html: <h2> {{ value }}-Present </h2>;;
   }
 

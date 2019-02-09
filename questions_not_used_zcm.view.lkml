@@ -1,5 +1,5 @@
 
-  include: "/webassign/questions_not_used.view.lkml"
+  include: "//webassign/questions_not_used.view.lkml"
 
   view: questions_not_used_zcm {
     extends: [questions_not_used]

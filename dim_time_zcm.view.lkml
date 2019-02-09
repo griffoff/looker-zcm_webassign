@@ -1,4 +1,4 @@
-include: "/webassign/dim_time.view.lkml"
+include: "//webassign/dim_time.view.lkml"
 
 view: dim_time_zcm {
   extends: [dim_time]
@@ -30,24 +30,33 @@ left join x on dt.special_ay_year = x.special_ay_year
 
   dimension: ay_value {
     type: number
+    hidden: yes
     label: "Special AY Year Order"
     description: "Current AY =0, prior year = -1, 2 years ago = -2, etc"
 #    sql: -(${special_ay_order} - 1) ;;
     sql: ${TABLE}.ay_value  ;;
   }
 
-
+dimension: special_ay_year {
+  hidden: yes
+  drill_fields: [_zcm.topic_filter.topic, _zcm_topic_filter.topic_group, dim_section.course_id, dim_section.section_id]
+}
 
 
   dimension: ay_start_year {
     type: number
+    hidden: yes
     sql: left(${special_ay_year},4) ;;
   }
 
   dimension: ay_end_year {
     type: number
+    hidden: yes
     sql: right(${special_ay_year},4) ;;
   }
+
+  dimension: cdate {hidden:yes}
+  dimension: timedate {hidden:yes}
 
 
 }

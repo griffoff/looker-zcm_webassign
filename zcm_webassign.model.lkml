@@ -2,8 +2,8 @@
 #connection: "snowflake_webassign"
 
 # include the model and all the views from webassign project, all the views from the zcm_webassign project, & dashboards
- include: "/webassign/*.model.lkml"
-include: "/webassign/webassign.dims.model.lkml"
+ include: "//webassign/*.model.lkml"
+include: "//webassign/webassign.dims.model.lkml"
 include: "/zcm_webassign/fact_registration_zcm.view.lkml"
 include: "/zcm_webassign/dim_time_zcm.view.lkml"
 include: "/zcm_webassign/responses_zcm.view.lkml"
@@ -18,9 +18,9 @@ include: "/zcm_webassign/zcm_cross_view_fields.view.lkml"
 include: "/zcm_webassign/questions_zcm.view.lkml"
 include: "/zcm_webassign/questions_used_notused.view.lkml"
 ##include: "/core/common.lkml"
-include: "/webassign/*.view.lkml"
+include: "//webassign/*.view.lkml"
 # include: "/zcm_webassign/*.view.lkml"
-include: "/webassign/dim_deployment.view.lkml"
+include: "//webassign/dim_deployment.view.lkml"
 ##include: "*.dashboard"
 
 

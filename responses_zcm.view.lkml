@@ -1,4 +1,4 @@
-include: "/webassign/responses.view.lkml"
+include: "//webassign/responses.view.lkml"
 
 view: responses_zcm {
   extends: [responses]

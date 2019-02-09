@@ -1,5 +1,5 @@
 
-include: "/webassign/categories.view.lkml"
+include: "//webassign/categories.view.lkml"
 
 view: categories_zcm {
   extends: [categories]

@@ -1,4 +1,4 @@
-include: "/webassign/dim_textbook.view.lkml"
+include: "//webassign/dim_textbook.view.lkml"
 
 
 view: dim_textbook_zcm {
@@ -54,6 +54,7 @@ view: dim_textbook_zcm {
     type: string
     view_label: "           Parameters & Filters"
     default_value: "Internal, OER"
+    hidden:  yes
     suggestions: [
       "Internal"
       , "OER"

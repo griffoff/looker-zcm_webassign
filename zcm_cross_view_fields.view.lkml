@@ -1,4 +1,4 @@
-include: "/webassign/*.model.lkml"
+include: "//webassign/*.model.lkml"
 include: "dim_assignment_zcm.view.lkml"
 
 

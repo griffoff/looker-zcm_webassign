@@ -1,7 +1,7 @@
 
-include: "/webassign/*.model.lkml"
+include: "//webassign/*.model.lkml"
   include: "fact_registration_zcm.view.lkml"
-  include: "/webassign/dim_discipline.view.lkml"
+  include: "//webassign/dim_discipline.view.lkml"
 
 view: zcm_school_redesign_registration {
 #  extends: [fact_registration_zcm]

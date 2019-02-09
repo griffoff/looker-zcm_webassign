@@ -1,4 +1,4 @@
-include: "/webassign/dim_assignment.view.lkml"
+include: "//webassign/dim_assignment.view.lkml"
 
 view: dim_assignment_zcm {
   extends: [dim_assignment]
