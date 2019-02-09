@@ -60,7 +60,7 @@ view: dim_school_zcm {
     label: "State Mandated Weight Multiplier"
     description: "Denotes if the state the school is in is known to have implemented a corequisite redesign state mandate"
     view_label: "School"
-    sql:  CASE WHEN state_abbr IN ('CA', ' CO', ' GA', ' HI', ' IN', ' KY', ' MN', ' NC', ' OH', ' OK', ' TN', ' TX', ' VA', ' WV', ' MT') THEN {% parameter state_mandate_instructor_weight %}
+    sql:  CASE WHEN ${state_abbr} IN ('CA', ' CO', ' GA', ' HI', ' IN', ' KY', ' MN', ' NC', ' OH', ' OK', ' TN', ' TX', ' VA', ' WV', ' MT') THEN {% parameter state_mandate_instructor_weight %}
             ELSE 1
             END
     ;;
@@ -72,7 +72,7 @@ view: dim_school_zcm {
     description: "Denotes if the state the school is in is known to have implemented a corequisite redesign state mandate"
     view_label: "School"
     sql:
-          CASE WHEN state_abbr IN ('CA', ' CO', ' GA', ' HI', ' IN', ' KY', ' MN', ' NC', ' OH', ' OK', ' TN', ' TX', ' VA', ' WV', ' MT') THEN 'Yes'
+          CASE WHEN ${state_abbr} IN ('CA', ' CO', ' GA', ' HI', ' IN', ' KY', ' MN', ' NC', ' OH', ' OK', ' TN', ' TX', ' VA', ' WV', ' MT') THEN 'Yes'
             ELSE 'No'
             END ;;
   }
