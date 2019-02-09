@@ -64,8 +64,7 @@ join: _zcm_targeted_instructor_ranking {
   join: dim_faculty {fields: []}
   join: dim_section {from: dim_section_zcm}
 
-  join: dim_discipline {
-    from: dim_discipline_zcm
+  join:  dim_discipline_zcm {
   }
 
   join: dim_time {
