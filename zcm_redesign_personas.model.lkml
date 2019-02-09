@@ -156,10 +156,10 @@ include: "redesign_test.explore.lkml"
 #
 #}
 
-explore: test {
+explore: zcm_coreq_redesign_personas {
   extends: [fact_registration]
   from: __zcm_lifetime_view
-  label: "Test"
+  label: "Co-Requisite Redesign Personas"
   case_sensitive: no
 
 ##################################################################
