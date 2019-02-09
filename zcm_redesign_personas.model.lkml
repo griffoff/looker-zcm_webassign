@@ -18,14 +18,14 @@ explore: zcm_coreq_redesign_personas {
     type: left_outer
     relationship: one_to_one
     view_label: "    Targeted View"
-    sql_on: ${fact_registration.pk1_fact_registration_id} = ${__zcm_targeted_view.pk1_fact_registration_id}   ;;
+    sql_on: ${fact_registration.fact_registration_id} = ${__zcm_targeted_view.pk1_fact_registration_id}   ;;
   }
 
 join: __zcm_coregateway_view {
   type: left_outer                                                                                                ### Add Core Gateway View which is used by _zcm_school_filter include only the schools that meet
   relationship: one_to_one                                                                                        ### Core Gateway Annual Registration threshold. Includes less course topics
   view_label: " Core Gateway View"##### Assuming one to one since pks are all unique
-  sql_on: ${fact_registration.pk1_fact_registration_id} = ${__zcm_coregateway_view.pk1_fact_registration_id} ;;
+  sql_on: ${fact_registration.fact_registration_id} = ${__zcm_coregateway_view.pk1_fact_registration_id} ;;
 }
 
 #################################################################
