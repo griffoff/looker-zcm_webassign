@@ -2,6 +2,7 @@ include: "//webassign/*.view.lkml"
 include: "//webassign/*.model.lkml"
 include: "*.view.lkml"
 include: "redesign_test.explore.lkml"
+include: "//webassign/fact_registration.view.lkml"
 
 
 explore: zcm_coreq_redesign_personas {
