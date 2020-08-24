@@ -92,7 +92,8 @@ explore: responses_zcm {
   from: responses_zcm
   view_name: responses
   label: "Student Take Analysis - ZCM"
-  sql_always_where: ${dim_school.type} IN ('Community College', 'University')  ;;
+  #sql_always_where: ${dim_school.type} IN ('Community College', 'University')  ;;
+  sql_always_where: FALSE ;;
 
 
   join: dim_assignment {
